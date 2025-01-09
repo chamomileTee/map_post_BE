@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
+ * PinboardApplication
  * <p>Pinboard Application</p>
  * @since 2025-01-09
  * @version 1.0

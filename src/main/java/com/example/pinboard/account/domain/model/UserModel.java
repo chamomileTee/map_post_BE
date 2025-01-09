@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 @Entity //JPA 엔티티 클래스임을 나타냄. 데이터베이스 테이블과 매핑
 @NoArgsConstructor(access = AccessLevel.PROTECTED) //기본 생성자: 인자 없는 생성자 생성. 무분별한 객체 생성 방지
 @AllArgsConstructor //전체 생성자: 모든 필드를 인자로 받는 생성자를 자동 생성
+@Builder
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "pb_user")
 public class UserModel {

@@ -20,6 +20,9 @@ import java.io.Serializable;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "pb_memo_visibility")
 public class MemoVisibilityModel {

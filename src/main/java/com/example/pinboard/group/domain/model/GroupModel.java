@@ -19,6 +19,9 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
+@Getter
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "pb_group")
 public class GroupModel {

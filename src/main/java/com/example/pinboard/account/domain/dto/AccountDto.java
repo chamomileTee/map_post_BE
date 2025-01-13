@@ -1,9 +1,6 @@
 package com.example.pinboard.account.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * AccountDto
@@ -13,10 +10,12 @@ import lombok.NoArgsConstructor;
  * @author Jihyeon Park(jihyeon2525)
  */
 @Data
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class AccountDto {
     private Long userId;
+    private String email;
     private String userName;
 }

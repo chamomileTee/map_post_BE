@@ -1,5 +1,8 @@
 package com.example.pinboard.common.handler;
 
+import com.example.pinboard.account.controller.AccountController;
+import com.example.pinboard.security.controller.AuthController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,7 +22,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Messenger> handleGeneralException(GlobalException ex){
+    public ResponseEntity<Messenger> handleGlobalException(GlobalException ex){
         return ResponseEntity.status(ex.getStatus().getHttpStatus())
                 .body(Messenger.builder()
                         .message(ex.getMessage()).build());

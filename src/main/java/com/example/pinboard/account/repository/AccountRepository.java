@@ -17,6 +17,4 @@ public interface AccountRepository extends JpaRepository<UserModel, Long> {
 
     @Query("SELECT u FROM UserModel u WHERE u.userName = :userName")
     Optional<UserModel> findByName(String userName);
-
-
 }

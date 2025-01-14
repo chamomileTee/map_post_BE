@@ -8,6 +8,8 @@ import com.example.pinboard.common.domain.vo.SuccessStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.log.domain.vo.ActivityType;
 import com.example.pinboard.log.service.UserActivityLogService;
+import com.example.pinboard.memo.repository.MemoRepository;
+import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.security.domain.dto.LoginDto;
 import com.example.pinboard.security.provider.JwtTokenProvider;
 import com.example.pinboard.security.service.RefreshTokenService;
@@ -21,8 +23,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.pinboard.security.service.AuthService;
 
-import java.util.Optional;
-
+/**
+ * Auth Service Implementation
+ * <p>Auth Service Implementation</p>
+ *
+ * @author Jihyeon Park(jihyeon2525)
+ * @version 1.0
+ * @see AuthService
+ * @since 2025-01-14
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "AuthServiceImpl")

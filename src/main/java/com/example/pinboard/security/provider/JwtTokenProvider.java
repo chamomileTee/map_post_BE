@@ -15,6 +15,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.security.core.Authentication;
 
 import javax.crypto.SecretKey;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -92,8 +93,9 @@ public class JwtTokenProvider {
         return ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth/refresh")
+                .path("/") //이 하위 path에서만 cookie 전송
                 .maxAge(refreshTokenExpiration / 1000)
+                .sameSite("none") //모든 요청에 서드파티 쿠키와, 퍼스트파티 쿠키가 전송
                 .build();
     }
 
@@ -126,6 +128,7 @@ public class JwtTokenProvider {
 
     public String extractRefreshTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("refresh_token")) {
@@ -133,7 +136,11 @@ public class JwtTokenProvider {
                 }
             }
         }
+        log.warn("Refresh token not found in cookies");
         return null;
     }
 
+    public long getRefreshTokenExpirationInSeconds() {
+        return refreshTokenExpiration / 1000;
+    }
 }

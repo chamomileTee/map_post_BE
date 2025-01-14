@@ -8,6 +8,8 @@ import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
+import com.example.pinboard.log.domain.vo.ActivityType;
+import com.example.pinboard.log.service.UserActivityLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
+    private final UserActivityLogService userActivityLogService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -45,5 +48,7 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         accountRepository.save(newUser);
+
+        userActivityLogService.logUserActivity(newUser, ActivityType.REGISTER);
     }
 }

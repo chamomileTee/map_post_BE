@@ -4,6 +4,7 @@ import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.security.provider.JwtTokenProvider;
+import com.example.pinboard.security.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -33,10 +34,11 @@ import java.util.List;
  * @since 2025-01-13
  */
 @Slf4j(topic = "JwtAuthenticationFilter")
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final List<String> AUTH_BLACKLIST = Arrays.asList(
@@ -77,21 +79,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     accessToken != null ? "Present" : "Absent",
                     refreshToken != null ? "Present" : "Absent");
 
-            if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
-                log.warn("Refresh token is expired or invalid for request: {}", requestUrl);
-                throw new GlobalException(ExceptionStatus.EXPIRED_TOKEN, "Refresh token is expired or invalid. Please log in again.");
-            }
-
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
                 Authentication authentication = getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("Successfully authenticated user for request: {}", requestUrl);
-            } else {
+            } else if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken) && refreshTokenService.validateRefreshToken(refreshToken)) {
                 log.info("Access token is expired or invalid. Attempting to renew using refresh token for request: {}", requestUrl);
                 String newAccessToken = renewAccessToken(refreshToken);
                 response.setHeader("Authorization", "Bearer " + newAccessToken);
                 SecurityContextHolder.getContext().setAuthentication(getAuthentication(newAccessToken));
                 log.info("Successfully renewed access token for request: {}", requestUrl);
+            } else {
+                log.warn("Both access and refresh tokens are invalid or missing for request: {}", requestUrl);
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Authentication failed. Please log in again.");
             }
 
             filterChain.doFilter(request, response);

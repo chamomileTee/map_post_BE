@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
  * @version 1.0
  * @author Jihyeon Park(jihyeon2525)
  */
-@Data
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -39,7 +38,7 @@ public class RefreshTokenModel {
     private String token;
 
     @Column(name = "is_valid")
-    private Boolean isValid;
+    private Boolean isValid = true;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

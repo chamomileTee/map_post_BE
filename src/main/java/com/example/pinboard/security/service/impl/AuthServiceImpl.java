@@ -6,8 +6,11 @@ import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.domain.vo.SuccessStatus;
 import com.example.pinboard.common.exception.GlobalException;
+import com.example.pinboard.log.domain.vo.ActivityType;
+import com.example.pinboard.log.service.UserActivityLogService;
 import com.example.pinboard.security.domain.dto.LoginDto;
 import com.example.pinboard.security.provider.JwtTokenProvider;
+import com.example.pinboard.security.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -27,64 +30,68 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
+    private final RefreshTokenService refreshTokenService;
+    private final UserActivityLogService userActivityLogService;
     private final AccountRepository accountRepository;
 
     @Override
     @Transactional
     public ResponseEntity<Messenger> login(LoginDto dto) {
-        String encoder = passwordEncoder.encode(dto.getPassword());
-
         String email = dto.getEmail();
         String password = dto.getPassword();
 
-        log.info("encoder: {}", encoder);
-        log.info("encoder: {}", passwordEncoder.matches(password, encoder));
+        return accountRepository.findByEmail(email)
+                .map(user -> {
+                    if (!passwordEncoder.matches(password, user.getPassword())) {
+                        throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
+                    }
 
-        Optional<UserModel> user = accountRepository.findByEmail(email);
+                    String accessToken = jwtTokenProvider.generateAccessToken(email);
+                    String refreshToken = jwtTokenProvider.generateRefreshToken(email);
 
-        String accessToken = null;
-        String refreshToken = null;
+                    log.info("AccessToken for user {}: {}", email, accessToken);
+                    log.info("RefreshToken for user {}: {}", email, refreshToken);
 
-        if (user.isEmpty()) {
-            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
-        } else if (user.isPresent()) {
-            if (!passwordEncoder.matches(password, user.get().getPassword())) {
-                throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
-            }
+                    refreshTokenService.createRefreshToken(user, refreshToken); //DB에 refreshToken 저장
 
-            accessToken = jwtTokenProvider.generateAccessToken(email);
-            refreshToken = jwtTokenProvider.generateRefreshToken(email);
+                    ResponseCookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
 
-        }
+                    userActivityLogService.logUserActivity(user, ActivityType.LOGIN);
 
-        try {
-            ResponseCookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
-            return ResponseEntity.ok()
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Messenger.builder()
-                            .message("Login: " + SuccessStatus.OK.getMessage())
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Messenger.builder()
-                            .message("Login: " + e.getMessage())
-                            .build());
-        }
+                    return ResponseEntity.ok()
+                            .header("Authorization", "Bearer " + accessToken)
+                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(Messenger.builder()
+                                    .message("Login: " + SuccessStatus.OK.getMessage())
+                                    .build());
+                })
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
     }
 
     @Override
+    @Transactional
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         // AccessToken은 클라이언트에서 제거)
 
-        // RefreshToken 쿠키 삭제
+        //DB에서 RefreshToken 삭제
+        String refreshToken = jwtTokenProvider.extractRefreshTokenFromCookie(request);
+        if (refreshToken != null) {
+            refreshTokenService.invalidateRefreshToken(refreshToken);
+        }
+
+        //RefreshToken 쿠키 삭제
         ResponseCookie deletedCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
                 .maxAge(0)
                 .build();
+
+        String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+        userActivityLogService.logUserActivity(user, ActivityType.LOGOUT);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deletedCookie.toString())

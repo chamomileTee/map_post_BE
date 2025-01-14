@@ -2,6 +2,7 @@ package com.example.pinboard.log.domain.model;
 
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.log.domain.vo.ActivityType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -46,6 +47,7 @@ public class UserActivityLogModel {
     private String userAgent;
 
     @CreatedDate
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 }

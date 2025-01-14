@@ -1,8 +1,6 @@
 package com.example.pinboard.account.domain.model;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
@@ -39,12 +37,19 @@ public class UserModel {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now().withNano(0);
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        updatedAt = LocalDateTime.now().withNano(0);
+    }
 }

@@ -91,7 +91,7 @@ public class JwtTokenProvider {
 
     public ResponseCookie generateRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)
+                .httpOnly(true) //client에서의 쿠키 탈취 예방
                 .secure(true)
                 .path("/") //이 하위 path에서만 cookie 전송
                 .maxAge(refreshTokenExpiration / 1000)
@@ -136,7 +136,7 @@ public class JwtTokenProvider {
                 }
             }
         }
-        log.warn("Refresh token not found in cookies");
+
         return null;
     }
 

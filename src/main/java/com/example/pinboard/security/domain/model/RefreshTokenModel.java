@@ -1,6 +1,7 @@
 package com.example.pinboard.security.domain.model;
 
 import com.example.pinboard.account.domain.model.UserModel;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -41,6 +42,7 @@ public class RefreshTokenModel {
     private Boolean isValid = true;
 
     @CreatedDate
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

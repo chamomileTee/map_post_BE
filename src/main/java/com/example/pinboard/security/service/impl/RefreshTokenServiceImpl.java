@@ -1,6 +1,8 @@
 package com.example.pinboard.security.service.impl;
 
 import com.example.pinboard.account.domain.model.UserModel;
+import com.example.pinboard.memo.repository.MemoRepository;
+import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.security.domain.model.RefreshTokenModel;
 import com.example.pinboard.security.provider.JwtTokenProvider;
 import com.example.pinboard.security.repository.RefreshTokenRepository;
@@ -12,6 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * Refresh Token Service Implementation
+ * <p>Refresh Token Service Implementation</p>
+ *
+ * @author Jihyeon Park(jihyeon2525)
+ * @version 1.0
+ * @see RefreshTokenService
+ * @see RefreshTokenRepository
+ * @since 2025-01-14
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor

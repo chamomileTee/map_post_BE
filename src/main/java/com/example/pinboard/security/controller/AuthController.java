@@ -2,6 +2,8 @@ package com.example.pinboard.security.controller;
 
 import com.example.pinboard.security.service.AuthService;
 import com.example.pinboard.security.domain.dto.LoginDto;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +33,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto dto) {
         return authService.login(dto);
+    }
+
+    @PostMapping ("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        return authService.logout(request, response);
     }
 }

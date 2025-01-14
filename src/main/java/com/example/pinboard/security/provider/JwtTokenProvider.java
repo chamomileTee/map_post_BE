@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -87,13 +88,13 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
-    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        Cookie cookie = new Cookie("refresh_token", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Use only in HTTPS
-        cookie.setPath("/api/auth/refresh"); // Set path to your refresh endpoint
-        cookie.setMaxAge((int) (refreshTokenExpiration / 1000)); // Convert to seconds
-        response.addCookie(cookie);
+    public ResponseCookie generateRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/auth/refresh")
+                .maxAge(refreshTokenExpiration / 1000)
+                .build();
     }
 
     public boolean validateToken(String token) {

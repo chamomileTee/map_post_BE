@@ -26,7 +26,7 @@ public enum ExceptionStatus {
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "Malformed Token", 4104),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "Access Denied",403),
 
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User is not found with the provided user ID", 4041),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User is not found with the provided email, ID or nickname", 4041),
     ALREADY_LOGGED_IN(HttpStatus.CONFLICT, "User is already logged in",409),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid username or password", 4011),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",500),

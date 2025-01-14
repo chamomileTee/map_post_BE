@@ -16,7 +16,6 @@ import java.io.Serializable;
  * @version 1.0
  * @since 2025-01-09
  */
-@Data
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

@@ -3,9 +3,9 @@ package com.example.pinboard.account.domain.dto;
 import lombok.*;
 
 /**
- * AccountDto
- * <p>Account Data Transfer Object</p>
- * @since 2025-01-09
+ * RegisterDto
+ * <p>Register Data Transfer Object</p>
+ * @since 2025-01-14
  * @version 1.0
  * @author Jihyeon Park(jihyeon2525)
  */
@@ -14,8 +14,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AccountDto {
-    private Long userId;
-    private String email;
+public class RegisterDto {
     private String userName;
+    private String email;
+    private String password;
 }

@@ -3,8 +3,6 @@ package com.example.pinboard.memo.domain.model;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.group.domain.model.GroupModel;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
@@ -18,7 +16,6 @@ import java.time.LocalDateTime;
  * @version 1.0
  * @since 2025-01-09
  */
-@Data
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -41,7 +38,7 @@ public class MemoModel {
     @JoinColumn(name = "group_id")
     private GroupModel group;
 
-    @Column(name = "memo_title", nullable = false)
+    @Column(name = "memo_title")
     private String memoTitle;
 
     @Column(name = "memo_content")
@@ -53,11 +50,19 @@ public class MemoModel {
     @Column(name = "longitude")
     private Double longitude;
 
-    @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now().withNano(0);
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        updatedAt = LocalDateTime.now().withNano(0);
+    }
 }

@@ -1,21 +1,21 @@
-package com.example.pinboard.memo.domain.model;
+package com.example.pinboard.security.domain.model;
 
 import com.example.pinboard.account.domain.model.UserModel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+
+import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * MemoCommentModel
- * <p>memo_comments 테이블</p>
- *
- * @author Jihyeon Park(jihyeon2525)
+ * RefreshTokenModel
+ * <p>유저 리프레시 토큰 정보 저장</p>
+ * @since 2024-01-13
  * @version 1.0
- * @since 2025-01-09
+ * @author Jihyeon Park(jihyeon2525)
  */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,26 +24,28 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "pb_memo_comment")
-public class MemoCommentModel {
+@Table(name = "pb_refresh_token")
+public class RefreshTokenModel {
     @Id
+    @Column(name = "token_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
-    private Long commentId;
-
-    @Column(name = "content", nullable = false)
-    private String content;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memo_id", nullable = false)
-    private MemoModel memo;
+    @Column(name = "token", nullable = false)
+    private String token;
+
+    @Column(name = "is_valid")
+    private Boolean isValid = true;
 
     @CreatedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "expiration_time", nullable = false)
+    private LocalDateTime expirationTime;
 }

@@ -61,8 +61,6 @@ public class MemoServiceImpl implements MemoService {
             }
         }**/
 
-        //Optional<GroupModel> group = groupRepository.findById(groupId);
-
         MemoModel newMemo = MemoModel.builder()
                 .user(user)
                 .group(group)

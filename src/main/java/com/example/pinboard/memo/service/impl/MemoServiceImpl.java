@@ -44,8 +44,8 @@ public class MemoServiceImpl implements MemoService {
 
     private final JPAQueryFactory queryFactory;
     private final QMemoModel qMemo = QMemoModel.memoModel;
-    private final QGroupMemberModel qGroupMemberModel = QGroupMemberModel.groupMemberModel;
-    private final QMemoVisibilityModel qMemoVisibilityModel = QMemoVisibilityModel.memoVisibilityModel;
+    private final QGroupMemberModel qGroupMember = QGroupMemberModel.groupMemberModel;
+    private final QMemoVisibilityModel qMemoVisibility = QMemoVisibilityModel.memoVisibilityModel;
 
     @Override
     public void create(AccountDto accountDto, CreateMemoDto createMemoDto) {
@@ -79,11 +79,11 @@ public class MemoServiceImpl implements MemoService {
 
         List<MemoModel> memos = queryFactory
                 .selectFrom(qMemo)
-                .leftJoin(qGroupMemberModel).on(qMemo.group.eq(qGroupMemberModel.group))
-                .leftJoin(qMemoVisibilityModel).on(qMemo.memoId.eq(qMemoVisibilityModel.memo.memoId))
-                .where(qGroupMemberModel.user.userId.eq(userId)
-                        .and(qMemoVisibilityModel.user.userId.eq(userId))
-                        .and(qMemoVisibilityModel.isHidden.eq(false)))
+                .leftJoin(qGroupMember).on(qMemo.group.eq(qGroupMember.group))
+                .leftJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
+                .where(qGroupMember.user.userId.eq(userId)
+                        .and(qMemoVisibility.user.userId.eq(userId))
+                        .and(qMemoVisibility.isHidden.eq(false)))
                 .orderBy(qMemo.createdAt.desc())
                 .fetch();
 

@@ -90,7 +90,11 @@ public class MemoServiceImpl implements MemoService {
                 .fetch();
 
         return memos.stream()
-                .map(this::entityToDtoLocation)
+                .map(memo -> LocationDto.builder()
+                        .memoId(memo.getMemoId())
+                        .latitude(memo.getLatitude())
+                        .longitude(memo.getLongitude())
+                        .build())
                 .collect(Collectors.toList());
     }
 }

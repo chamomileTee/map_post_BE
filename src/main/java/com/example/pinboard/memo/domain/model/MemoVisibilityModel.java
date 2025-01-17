@@ -25,32 +25,19 @@ import java.io.Serializable;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "pb_memo_visibility")
 public class MemoVisibilityModel {
-    @EmbeddedId
-    private MemoVisibilityId memoVisiblityId;
+    @Id
+    @Column(name = "memo_visibility_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long memoVisiblityId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("memoId")
-    @JoinColumn(name = "memo_id")
+    @JoinColumn(name = "memo_id", nullable = false)
     private MemoModel memo;
 
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
-}
-
-@Embeddable
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-class MemoVisibilityId implements Serializable {
-    @Column(name = "user_id")
-    private Long userId;
-
-    @Column(name = "memo_id")
-    private Long memoId;
 }

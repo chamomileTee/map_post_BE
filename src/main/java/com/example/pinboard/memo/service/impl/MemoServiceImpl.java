@@ -7,6 +7,8 @@ import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.group.domain.model.GroupModel;
 import com.example.pinboard.group.domain.model.QGroupMemberModel;
+import com.example.pinboard.group.repository.GroupMemberRepository;
+import com.example.pinboard.group.repository.GroupRepository;
 import com.example.pinboard.memo.domain.dto.CreateMemoDto;
 import com.example.pinboard.memo.domain.dto.LocationDto;
 import com.example.pinboard.memo.domain.model.MemoModel;
@@ -39,8 +41,8 @@ import java.util.stream.Collectors;
 public class MemoServiceImpl implements MemoService {
     private final MemoRepository memoRepository;
     private final AccountRepository accountRepository;
-    //private final GroupRepository groupRepository;
-    //private final GroupMemberRepository groupMemberRepository;
+    private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     private final JPAQueryFactory queryFactory;
     private final QMemoModel qMemo = QMemoModel.memoModel;
@@ -53,13 +55,13 @@ public class MemoServiceImpl implements MemoService {
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         GroupModel group = null;
-        /**if (createMemoDto.getGroupId() != null) {
+        if (createMemoDto.getGroupId() != null) {
             group = groupRepository.findById(createMemoDto.getGroupId())
                     .orElse(null);
             if (!groupMemberRepository.existsByUserAndGroup(user, group)) {
                 throw new GlobalException(ExceptionStatus.NO_PERMISSION);
             }
-        }**/
+        }
 
         MemoModel newMemo = MemoModel.builder()
                 .user(user)

@@ -1,7 +1,6 @@
 package com.example.pinboard.memo.domain.model;
 
 import com.example.pinboard.account.domain.model.UserModel;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,7 +42,6 @@ public class MemoCommentModel {
     private MemoModel memo;
 
     @CreatedDate
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 }

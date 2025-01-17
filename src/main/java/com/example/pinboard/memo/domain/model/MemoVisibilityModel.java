@@ -6,8 +6,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 
-import java.io.Serializable;
-
 /**
  * MemoVisibilityModel
  * <p>memo_visibility 테이블</p>

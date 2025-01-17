@@ -1,14 +1,12 @@
 package com.example.pinboard.group.service;
 
+import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
-import com.example.pinboard.group.domain.model.GroupMemberModel;
-import com.example.pinboard.group.repository.GroupRepository;
-import com.example.pinboard.group.repository.GroupMemberRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.example.pinboard.group.domain.dto.CreateGroupDto;
+import com.example.pinboard.group.domain.model.GroupModel;
+import com.example.pinboard.memo.domain.dto.CreateMemoDto;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * GroupService
@@ -18,20 +16,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 2025-01-13
  */
-@Service
-@RequiredArgsConstructor
-public class GroupService {
 
-    private final GroupRepository groupRepository;
-    private final GroupMemberRepository groupMemberRepository;
-
-    public List<GroupNameDto> getGroupNames() {
-        // 모든 그룹 멤버 정보를 가져오는 로직
-        List<GroupMemberModel> groupMembers = groupMemberRepository.findAll();
-
-        // 그룹 정보에서 GroupNameDto로 변환하여 반환
-        return groupMembers.stream()
-                .map(groupMember -> new GroupNameDto(groupMember.getGroup().getGroupId(), groupMember.getGroupName()))
-                .collect(Collectors.toList());
-    }
+public interface GroupService {
+    void create(AccountDto accountDto, CreateGroupDto createGroupDto);
 }

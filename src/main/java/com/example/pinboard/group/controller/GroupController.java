@@ -1,10 +1,18 @@
 package com.example.pinboard.group.controller;
 
+import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.account.service.AccountService;
+import com.example.pinboard.common.exception.GlobalException;
+import com.example.pinboard.group.domain.dto.CreateGroupDto;
+import com.example.pinboard.group.domain.dto.GroupNameDto;
+import com.example.pinboard.security.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
@@ -15,7 +23,7 @@ import java.util.List;
 /**
  * GroupController
  * <p>그룹 관련 API 컨트롤러</p>
- *
+ * <p>Endpoint: <b>/api/groups</b></p>
  * @since 2025-01-13
  * @version 1.0
  * @author JaeSeung Lee
@@ -25,46 +33,27 @@ import java.util.List;
 @RequestMapping("/api/groups")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public class GroupController {
-
     private final GroupService groupService;
+    private final AccountService accountService;
 
-    /**
-     * 그룹 이름 리스트 조회
-     *
-     * @return 그룹 이름 리스트와 메시지를 담은 ResponseEntity
-     */
-    @GetMapping("/names")
-    public ResponseEntity<Messenger> getGroupNames() {
-
+    @PostMapping("/create")
+    public ResponseEntity<Messenger> create(
+            @RequestBody CreateGroupDto dto,
+            HttpServletRequest request) {
+        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
         try {
-            // groupId를 전달하지 않고 getGroupNames() 호출
-            List<GroupNameDto> groupNames = groupService.getGroupNames();
-
-            if (groupNames.isEmpty()) {
-                return ResponseEntity.ok(Messenger.builder()
-                        .message("Get Group Names: Failed")
-                        .data(null)
-                        .count(null)
-                        .state(null)
-                        .build());
-            }
-
+            groupService.create(accountDto, dto);
             return ResponseEntity.ok(Messenger.builder()
-                    .message("Get Group Names: " + SuccessStatus.OK.getMessage())
-                    .data(groupNames)
-                    .count(null)
-                    .state(null)
+                    .message("Create Memo: Ok")
                     .build());
-
-        } catch (Exception e) {
-            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Error: " + e.getMessage())
-                            .data(null)
-                            .count(null)
-                            .state(null)
+                            .message(e.getMessage())
                             .build());
         }
     }
+
 }

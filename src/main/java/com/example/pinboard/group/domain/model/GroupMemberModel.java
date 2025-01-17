@@ -3,12 +3,12 @@ package com.example.pinboard.group.domain.model;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
+        import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 
-import java.io.Serializable;
+        import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -68,3 +68,4 @@ class GroupMemberId implements Serializable {
     @Column(name = "group_id")
     private Long groupId;
 }
+

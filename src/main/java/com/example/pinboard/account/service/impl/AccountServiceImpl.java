@@ -2,10 +2,10 @@ package com.example.pinboard.account.service.impl;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.account.domain.dto.RegisterDto;
+import com.example.pinboard.account.domain.dto.UserNameDto;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.account.repository.AccountRepository;
 import com.example.pinboard.account.service.AccountService;
-import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.log.domain.vo.ActivityType;
@@ -50,5 +50,29 @@ public class AccountServiceImpl implements AccountService {
         accountRepository.save(newUser);
 
         userActivityLogService.logUserActivity(newUser, ActivityType.REGISTER);
+    }
+
+    @Override
+    public UserNameDto searchName(String userName) {
+        UserModel user = accountRepository.findByName(userName)
+                .orElse(null);
+
+        return user != null ? UserNameDto.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .build() : null;
+    }
+
+    @Override
+    @Transactional
+    public void modifyName(AccountDto accountDto, String name) {
+        UserModel user = accountRepository.findById(accountDto.getUserId())
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        if (accountRepository.findByName(name).isPresent()) {
+            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Modify Profile: Username already exists");
+        }
+
+        user.setUserName(name);
     }
 }

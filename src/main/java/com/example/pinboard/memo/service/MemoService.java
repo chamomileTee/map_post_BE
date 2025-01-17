@@ -15,14 +15,6 @@ import java.util.List;
  * @since 2025-01-15
  */
 public interface MemoService {
-    default LocationDto entityToDtoLocation(MemoModel model) {
-        return LocationDto.builder()
-                .memoId(model.getMemoId())
-                .latitude(model.getLatitude())
-                .longitude(model.getLongitude())
-                .build();
-    }
-
     void create(AccountDto accountDto, CreateMemoDto createMemoDto);
     List<LocationDto> getLocations(AccountDto accountDto);
 }

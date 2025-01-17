@@ -1,11 +1,16 @@
 package com.example.pinboard.account.controller;
 
+import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.account.domain.dto.UserNameDto;
 import com.example.pinboard.account.service.AccountService;
+import com.example.pinboard.common.domain.dto.Messenger;
+import com.example.pinboard.common.exception.GlobalException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Account Controller
@@ -22,7 +27,57 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/account")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public class AccountController {
     private final AccountService accountService;
 
+    @GetMapping("")
+    public ResponseEntity<Messenger> getProfile(HttpServletRequest request) {
+        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        try {
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Profile: Ok")
+                    .data(accountDto)
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/{userName}")
+    public ResponseEntity<Messenger> searchName(@PathVariable String userName) {
+        UserNameDto userNameDto = accountService.searchName(userName);
+        try {
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Search Name: Ok")
+                    .data(userNameDto)
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/name")
+    public ResponseEntity<Messenger> modifyName(
+            @RequestBody String name,
+            HttpServletRequest request) {
+        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        try {
+            accountService.modifyName(accountDto, name);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Modify Name: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
 }

@@ -3,12 +3,11 @@ package com.example.pinboard.group.domain.model;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-        import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 
-        import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -28,17 +27,17 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "pb_group_member")
 public class GroupMemberModel {
-    @EmbeddedId
-    private GroupMemberId groupMemberId;
+    @Id
+    @Column(name = "group_member_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long groupMemberId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("groupId")
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "group_id", nullable = false)
     private GroupModel group;
 
     @Column(name = "group_name")
@@ -51,21 +50,7 @@ public class GroupMemberModel {
     private Boolean isLeader = false;
 
     @CreatedDate
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     @Column(name = "joined_at", updatable = false)
     private LocalDateTime joinedAt;
 }
-
-@Embeddable
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-class GroupMemberId implements Serializable {
-    @Column(name = "user_id")
-    private Long userId;
-
-    @Column(name = "group_id")
-    private Long groupId;
-}
-

@@ -47,28 +47,30 @@ public class GroupServiceImpl implements GroupService {
                 .build();
         groupRepository.save(newGroup);
 
-//            GroupMemberModel leaderMember = GroupMemberModel.builder()
-//                    .user(user)
-//                    .group(newGroup)
-//    //                .isLeader(true)
-//                    .build();
-//            groupMemberRepository.save(leaderMember);
+        GroupMemberModel leaderMember = GroupMemberModel.builder()
+                .user(user)
+                .group(newGroup)
+                .isLeader(true)
+                .groupName(createGroupDto.getGroupName())
+                .groupDetail(createGroupDto.getGroupDetail())
+                .build();
+        groupMemberRepository.save(leaderMember);
 
-//        if (createGroupDto.getUserIds() != null && !createGroupDto.getUserIds().isEmpty()) {
-//            List<GroupMemberModel> additionalMembers = createGroupDto.getUserIds().stream()
-//                    .map(memberId -> {
-//                        UserModel member = accountRepository.findById(memberId)
-//                                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
-//                        return GroupMemberModel.builder()
-//                                .user(member)
-//                                .group(newGroup)
-//                                .isLeader(false)
-//                                .groupName(createGroupDto.getGroupName())
-//                                .groupDetail(createGroupDto.getGroupDetail())
-//                                .build();
-//                    })
-//                    .collect(Collectors.toList());
-//            groupMemberRepository.saveAll(additionalMembers);
-//        }
+        if (createGroupDto.getUserIds() != null && !createGroupDto.getUserIds().isEmpty()) {
+            List<GroupMemberModel> additionalMembers = createGroupDto.getUserIds().stream()
+                    .map(memberId -> {
+                        UserModel member = accountRepository.findById(memberId)
+                                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+                        return GroupMemberModel.builder()
+                                .user(member)
+                                .group(newGroup)
+                                .isLeader(false)
+                                .groupName(createGroupDto.getGroupName())
+                                .groupDetail(createGroupDto.getGroupDetail())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+            groupMemberRepository.saveAll(additionalMembers);
+        }
     }
 }

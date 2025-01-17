@@ -2,6 +2,7 @@ package com.example.pinboard.memo.domain.model;
 
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.group.domain.model.GroupModel;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -51,9 +52,11 @@ public class MemoModel {
     private Double longitude;
 
     @Column(name = "created_at", updatable = false)
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     private LocalDateTime updatedAt;
 
     @PrePersist

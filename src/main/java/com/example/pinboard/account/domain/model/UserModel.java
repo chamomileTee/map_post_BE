@@ -1,6 +1,5 @@
 package com.example.pinboard.account.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -39,11 +38,9 @@ public class UserModel {
     private String password;
 
     @Column(name = "created_at", updatable = false)
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     private LocalDateTime updatedAt;
 
     @PrePersist

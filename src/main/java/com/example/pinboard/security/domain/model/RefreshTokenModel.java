@@ -42,7 +42,7 @@ public class RefreshTokenModel {
     private Boolean isValid = true;
 
     @CreatedDate
-    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -1,6 +1,7 @@
 package com.example.pinboard.account.controller;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.account.domain.dto.ModifyPasswordDto;
 import com.example.pinboard.account.domain.dto.UserNameDto;
 import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.domain.dto.Messenger;
@@ -63,7 +64,7 @@ public class AccountController {
         }
     }
 
-    @PostMapping("/name")
+    @PutMapping("/name")
     public ResponseEntity<Messenger> modifyName(
             @RequestBody String name,
             HttpServletRequest request) {
@@ -72,6 +73,24 @@ public class AccountController {
             accountService.modifyName(accountDto, name);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Modify Name: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Messenger> modifyPassword(
+            @RequestBody ModifyPasswordDto dto,
+            HttpServletRequest request) {
+        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        try {
+            accountService.modifyPassword(accountDto, dto);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Modify Password: Ok")
                     .build());
         } catch (GlobalException e) {
             return ResponseEntity.status(e.getStatus().getHttpStatus())

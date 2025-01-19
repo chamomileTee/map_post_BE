@@ -1,6 +1,7 @@
 package com.example.pinboard.account.service.impl;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.account.domain.dto.ModifyPasswordDto;
 import com.example.pinboard.account.domain.dto.RegisterDto;
 import com.example.pinboard.account.domain.dto.UserNameDto;
 import com.example.pinboard.account.domain.model.UserModel;
@@ -9,6 +10,7 @@ import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.log.domain.vo.ActivityType;
+import com.example.pinboard.log.repository.UserActivityLogRepository;
 import com.example.pinboard.log.service.UserActivityLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
+    private final UserActivityLogRepository userActivityLogRepository;
     private final UserActivityLogService userActivityLogService;
 
     private final PasswordEncoder passwordEncoder;
@@ -71,8 +74,27 @@ public class AccountServiceImpl implements AccountService {
 
         if (accountRepository.findByName(name).isPresent()) {
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Modify Profile: Username already exists");
+        } else {
+            userActivityLogService.logUserActivity(user, ActivityType.NICKNAME_CHANGE);
+            userActivityLogRepository.flush();
+            user.setUserName(name);
         }
-
-        user.setUserName(name);
     }
+
+    @Override
+    @Transactional
+    public void modifyPassword(AccountDto accountDto, ModifyPasswordDto modifyPasswordDto) {
+        UserModel user = accountRepository.findById(accountDto.getUserId())
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(modifyPasswordDto.getPassword(), user.getPassword())) {
+            throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
+        } else {
+            userActivityLogService.logUserActivity(user, ActivityType.PASSWORD_CHANGE);
+            userActivityLogRepository.flush();
+            user.setPassword(passwordEncoder.encode(modifyPasswordDto.getNewPassword()));
+        }
+    }
+
+
 }

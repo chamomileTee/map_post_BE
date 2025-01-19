@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GroupMemberRepository extends JpaRepository<GroupMemberModel, Long> {
@@ -17,4 +18,6 @@ public interface GroupMemberRepository extends JpaRepository<GroupMemberModel, L
 
     List<GroupMemberModel> findByUser(UserModel user);
     List<GroupMemberModel> findByGroup_GroupId(Long groupId);
+
+    Optional<GroupMemberModel> findByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 }

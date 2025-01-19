@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GroupUpdateDto {
+public class GroupModifyDto {
     private String groupName;
     private String detail;
 }

@@ -1,9 +1,7 @@
 package com.example.pinboard.group.service;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
-import com.example.pinboard.group.domain.dto.GroupListDto;
-import com.example.pinboard.group.domain.dto.GroupNameDto;
-import com.example.pinboard.group.domain.dto.CreateGroupDto;
+import com.example.pinboard.group.domain.dto.*;
 
 import java.util.List;
 
@@ -22,4 +20,8 @@ public interface GroupService {
     List<GroupNameDto> getGroupNames(AccountDto accountDto);
 
     List<GroupListDto> getGroupList(String userEmail);
+
+    void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto);
+
+    String changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail);
 }

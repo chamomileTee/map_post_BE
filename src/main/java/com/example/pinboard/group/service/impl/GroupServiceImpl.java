@@ -1,16 +1,13 @@
 package com.example.pinboard.group.service.impl;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
-import com.example.pinboard.group.domain.dto.GroupListDto;
-import com.example.pinboard.group.domain.dto.GroupMembersDto;
-import com.example.pinboard.group.domain.dto.GroupNameDto;
+import com.example.pinboard.group.domain.dto.*;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.account.repository.AccountRepository;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.group.domain.model.GroupModel;
 import com.example.pinboard.group.domain.model.GroupMemberModel;
-import com.example.pinboard.group.domain.dto.CreateGroupDto;
 import com.example.pinboard.group.repository.GroupMemberRepository;
 import com.example.pinboard.group.repository.GroupRepository;
 import com.example.pinboard.group.service.GroupService;
@@ -132,4 +129,49 @@ public class GroupServiceImpl implements GroupService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        List<GroupMemberModel> groupMembers = groupMemberRepository.findByGroup_GroupId(groupId);
+
+        GroupMemberModel groupMember = groupMembers.stream()
+                .filter(member -> member.getUser().getUserId().equals(user.getUserId()))
+                .findFirst()
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+
+        groupMember.setGroupName(groupModifyDto.getGroupName());
+        groupMember.setGroupDetail(groupModifyDto.getDetail());
+
+        groupMemberRepository.save(groupMember);
+
+        log.info("Group with ID {} has been updated by user with email {}", groupId, userEmail);
+    }
+
+    @Override
+    public String changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail) {
+        Long newLeaderUserId = requestDto.getUserId();
+
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        GroupMemberModel currentLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
+                .filter(GroupMemberModel::getIsLeader)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+        GroupMemberModel newLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, newLeaderUserId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        currentLeader.setIsLeader(false);
+        newLeader.setIsLeader(true);
+
+        groupMemberRepository.save(currentLeader);
+        groupMemberRepository.save(newLeader);
+
+        log.info("Group leader for group {} has been changed to user with ID {}", groupId, newLeaderUserId);
+
+        return "{\"message\": \"Set Leader: Ok\"}";
+    }
+
 }

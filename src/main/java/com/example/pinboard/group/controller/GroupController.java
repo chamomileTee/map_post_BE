@@ -4,6 +4,7 @@ import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.group.domain.dto.CreateGroupDto;
+import com.example.pinboard.group.domain.dto.GroupListDto;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.security.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,4 +78,22 @@ public class GroupController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<Messenger> getGroupList(HttpServletRequest request) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            List<GroupListDto> groupList = groupService.getGroupList(userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Group List: Ok")
+                    .data(groupList)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Messenger.builder()
+                    .message("Get Group List: Failed")
+                    .data(null)
+                    .build());
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.pinboard.group.service;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.group.domain.dto.GroupListDto;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.group.domain.dto.CreateGroupDto;
 
@@ -19,4 +20,6 @@ public interface GroupService {
     void create(AccountDto accountDto, CreateGroupDto createGroupDto);
 
     List<GroupNameDto> getGroupNames(AccountDto accountDto);
+
+    List<GroupListDto> getGroupList(String userEmail);
 }

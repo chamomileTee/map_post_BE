@@ -1,6 +1,8 @@
 package com.example.pinboard.group.service.impl;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.group.domain.dto.GroupListDto;
+import com.example.pinboard.group.domain.dto.GroupMembersDto;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.account.repository.AccountRepository;
@@ -91,6 +93,43 @@ public class GroupServiceImpl implements GroupService {
                         member.getGroup().getGroupId(),
                         member.getGroupName()
                 ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GroupListDto> getGroupList(String userEmail) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        List<GroupMemberModel> groupMembers = groupMemberRepository.findByUser(user);
+
+        if (groupMembers.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.DATA_NOT_FOUND);
+        }
+
+        List<Long> groupIds = groupMembers.stream()
+                .map(groupMember -> groupMember.getGroup().getGroupId())
+                .toList();
+        return groupIds.stream()
+                .map(groupId -> {
+                    List<GroupMemberModel> membersInGroup = groupMemberRepository.findByGroup_GroupId(groupId);
+
+                    List<GroupMembersDto> members = membersInGroup.stream()
+                            .map(member -> new GroupMembersDto(
+                                    member.getUser().getUserId(),
+                                    member.getUser().getUserName(),
+                                    member.getIsLeader()
+                            ))
+                            .collect(Collectors.toList());
+                    GroupMemberModel representative = membersInGroup.get(0);
+
+                    return new GroupListDto(
+                            representative.getGroup().getGroupId(),
+                            representative.getGroupName(),
+                            representative.getGroupDetail(),
+                            members
+                    );
+                })
                 .collect(Collectors.toList());
     }
 }

@@ -68,9 +68,9 @@ public class AccountController {
     public ResponseEntity<Messenger> modifyName(
             @RequestBody String name,
             HttpServletRequest request) {
-        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        String userEmail = (String) request.getAttribute("userEmail");
         try {
-            accountService.modifyName(accountDto, name);
+            accountService.modifyName(userEmail, name);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Modify Name: Ok")
                     .build());
@@ -86,11 +86,27 @@ public class AccountController {
     public ResponseEntity<Messenger> modifyPassword(
             @RequestBody ModifyPasswordDto dto,
             HttpServletRequest request) {
-        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        String userEmail = (String) request.getAttribute("userEmail");
         try {
-            accountService.modifyPassword(accountDto, dto);
+            accountService.modifyPassword(userEmail, dto);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Modify Password: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @DeleteMapping("")
+    public ResponseEntity<Messenger> deleteAccount(HttpServletRequest request) {
+        String userEmail = (String) request.getAttribute("userEmail");
+        try {
+            accountService.deleteAccount(userEmail);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Delete Account: Ok")
                     .build());
         } catch (GlobalException e) {
             return ResponseEntity.status(e.getStatus().getHttpStatus())

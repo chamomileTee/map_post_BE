@@ -57,6 +57,106 @@ public class GroupController {
         }
     }
 
+    @PatchMapping("/{groupId}")
+    public ResponseEntity<Messenger> updateGroup(
+            @PathVariable Long groupId,
+            @RequestBody GroupModifyDto groupModifyDto,
+            HttpServletRequest request) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            groupService.updateGroup(groupId, userEmail, groupModifyDto);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Group update: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Group update: Failed")
+                            .build());
+        }
+    }
+
+    @PutMapping("/{group-id}/manager")
+    public ResponseEntity<Messenger> changeGroupLeader(
+            @PathVariable("group-id") Long groupId,
+            @RequestBody PutGroupLeaderDto requestDto,
+            HttpServletRequest request) {
+        String userEmail = (String) request.getAttribute("userEmail");
+        Long newLeaderUserId = requestDto.getUserId();
+
+        try {
+            groupService.changeGroupLeader(groupId, requestDto, userEmail);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Set Leader: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            log.error("Error changing group leader", e);
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Set Leader: Failed")
+                            .build());
+        }
+    }
+
+    @PostMapping("/{group-id}/members")
+    public ResponseEntity<Messenger> addMembers(
+            @PathVariable("group-id") Long groupId,
+            @RequestBody MembersDto membersDto,
+            HttpServletRequest request) {
+
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            groupService.addMembers(groupId, membersDto, userEmail);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Add Members: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            log.error("Error adding members to group", e);
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Add Members: Failed")
+                            .build());
+        }
+    }
+
+    @DeleteMapping("/{group-id}/members")
+    public ResponseEntity<Messenger> deleteMembers(@PathVariable("group-id") Long groupId,
+                                                   @RequestBody MembersDto membersDto,
+                                                   @AuthenticationPrincipal String userEmail) {
+        try {
+            groupService.deleteMembers(groupId, membersDto, userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Delete Members: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @DeleteMapping("/{group-id}/leave")
+    public ResponseEntity<Messenger> leaveGroup(
+            @PathVariable("group-id") Long groupId,
+            @AuthenticationPrincipal String userEmail) {
+
+        try {
+            groupService.leaveGroup(groupId, userEmail);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Leave Group: Ok")
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
     @GetMapping("/names")
     public ResponseEntity<Messenger> getGroupNames(HttpServletRequest request) {
         String userEmail = (String) request.getAttribute("userEmail");
@@ -96,42 +196,4 @@ public class GroupController {
                     .build());
         }
     }
-
-    @PatchMapping("/{groupId}")
-    public ResponseEntity<Messenger> updateGroup(
-            @PathVariable Long groupId,
-            @RequestBody GroupModifyDto groupModifyDto,
-            HttpServletRequest request) {
-        String userEmail = (String) request.getAttribute("userEmail");
-
-        try {
-            groupService.updateGroup(groupId, userEmail, groupModifyDto);
-            return ResponseEntity.ok(Messenger.builder()
-                    .message("Group update: Ok")
-                    .build());
-        } catch (GlobalException e) {
-            return ResponseEntity.status(e.getStatus().getHttpStatus())
-                    .body(Messenger.builder()
-                            .message(e.getMessage())
-                            .build());
-        }
-    }
-
-    @PutMapping("/{group-id}/manager")
-    public ResponseEntity<String> changeGroupLeader(
-            @PathVariable("group-id") Long groupId,
-            @RequestBody PutGroupLeaderDto requestDto,
-            @AuthenticationPrincipal String userEmail) {
-
-        Long newLeaderUserId = requestDto.getUserId();
-
-        try {
-            String responseMessage = groupService.changeGroupLeader(groupId, requestDto, userEmail);
-            return ResponseEntity.ok(responseMessage);
-        } catch (GlobalException e) {
-            log.error("Error changing group leader", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"message\": \"Set Leader: Failed\"}");
-        }
-    }
-
 }

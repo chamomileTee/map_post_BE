@@ -16,12 +16,12 @@ import java.util.List;
 
 public interface GroupService {
     void create(AccountDto accountDto, CreateGroupDto createGroupDto);
+    void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto);
+    void changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail);
+    void addMembers(Long groupId, MembersDto membersDto, String userEmail);
+    void deleteMembers(Long groupId, MembersDto membersDto, String userEmail);
+    void leaveGroup(Long groupId, String userEmail);
 
     List<GroupNameDto> getGroupNames(AccountDto accountDto);
-
     List<GroupListDto> getGroupList(String userEmail);
-
-    void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto);
-
-    String changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail);
 }

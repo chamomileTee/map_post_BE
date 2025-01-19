@@ -75,6 +75,121 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        List<GroupMemberModel> groupMembers = groupMemberRepository.findByGroup_GroupId(groupId);
+
+        GroupMemberModel groupMember = groupMembers.stream()
+                .filter(member -> member.getUser().getUserId().equals(user.getUserId()))
+                .findFirst()
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+
+        groupMember.setGroupName(groupModifyDto.getGroupName());
+        groupMember.setGroupDetail(groupModifyDto.getDetail());
+
+        groupMemberRepository.save(groupMember);
+
+        log.info("Group with ID {} has been updated by user with email {}", groupId, userEmail);
+    }
+
+    @Override
+    public void changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail) {
+        Long newLeaderUserId = requestDto.getUserId();
+
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        GroupMemberModel currentLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
+                .filter(GroupMemberModel::getIsLeader)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+        GroupMemberModel newLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, newLeaderUserId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        currentLeader.setIsLeader(false);
+        newLeader.setIsLeader(true);
+
+        groupMemberRepository.save(currentLeader);
+        groupMemberRepository.save(newLeader);
+
+        log.info("Group leader for group {} has been changed to user with ID {}", groupId, newLeaderUserId);
+    }
+
+    @Override
+    public void addMembers(Long groupId, MembersDto membersDto, String userEmail) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        GroupModel group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        GroupMemberModel currentLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
+                .filter(GroupMemberModel::getIsLeader)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+
+        List<Long> existingUserIds = groupMemberRepository.findByGroup_GroupId(groupId).stream()
+                .map(groupMember -> groupMember.getUser().getUserId())
+                .toList();
+
+        List<GroupMemberModel> newMembers = membersDto.getUserIds().stream()
+                .filter(userId -> !existingUserIds.contains(userId))
+                .map(userId -> {
+                    UserModel newUser = accountRepository.findById(userId)
+                            .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+                    return GroupMemberModel.builder()
+                            .user(newUser)
+                            .group(group)
+                            .isLeader(false)
+                            .groupName(currentLeader.getGroupName())
+                            .groupDetail(currentLeader.getGroupDetail())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        if (!newMembers.isEmpty()) {
+            groupMemberRepository.saveAll(newMembers);
+        }
+    }
+
+    @Override
+    public void deleteMembers(Long groupId, MembersDto membersDto, String userEmail) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+        GroupModel group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+        GroupMemberModel currentLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
+                .filter(GroupMemberModel::getIsLeader)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
+        List<GroupMemberModel> membersToRemove = groupMemberRepository.findByGroup_GroupId(groupId).stream()
+                .filter(groupMember -> membersDto.getUserIds().contains(groupMember.getUser().getUserId()))
+                .collect(Collectors.toList());
+        if (membersToRemove.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.DATA_NOT_FOUND); // 삭제할 멤버가 없으면 에러
+        }
+
+        groupMemberRepository.deleteAll(membersToRemove);
+    }
+
+    @Override
+    public void leaveGroup(Long groupId, String userEmail) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        GroupModel group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        GroupMemberModel currentMember = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+        if (currentMember.getIsLeader()) {
+            throw new GlobalException(ExceptionStatus.UNAUTHORIZED);
+        }
+
+        groupMemberRepository.delete(currentMember);
+    }
+
+    @Override
     public List<GroupNameDto> getGroupNames(AccountDto accountDto) {
         UserModel user = accountRepository.findById(accountDto.getUserId())
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
@@ -129,49 +244,4 @@ public class GroupServiceImpl implements GroupService {
                 })
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto) {
-        UserModel user = accountRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
-
-        List<GroupMemberModel> groupMembers = groupMemberRepository.findByGroup_GroupId(groupId);
-
-        GroupMemberModel groupMember = groupMembers.stream()
-                .filter(member -> member.getUser().getUserId().equals(user.getUserId()))
-                .findFirst()
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
-
-        groupMember.setGroupName(groupModifyDto.getGroupName());
-        groupMember.setGroupDetail(groupModifyDto.getDetail());
-
-        groupMemberRepository.save(groupMember);
-
-        log.info("Group with ID {} has been updated by user with email {}", groupId, userEmail);
-    }
-
-    @Override
-    public String changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail) {
-        Long newLeaderUserId = requestDto.getUserId();
-
-        UserModel user = accountRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
-
-        GroupMemberModel currentLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, user.getUserId())
-                .filter(GroupMemberModel::getIsLeader)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.UNAUTHORIZED));
-        GroupMemberModel newLeader = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, newLeaderUserId)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
-
-        currentLeader.setIsLeader(false);
-        newLeader.setIsLeader(true);
-
-        groupMemberRepository.save(currentLeader);
-        groupMemberRepository.save(newLeader);
-
-        log.info("Group leader for group {} has been changed to user with ID {}", groupId, newLeaderUserId);
-
-        return "{\"message\": \"Set Leader: Ok\"}";
-    }
-
 }

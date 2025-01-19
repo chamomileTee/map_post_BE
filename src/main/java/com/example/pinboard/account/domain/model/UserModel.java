@@ -5,6 +5,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * UserModel
@@ -45,11 +46,11 @@ public class UserModel {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now().withNano(0);
+        createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate(){
-        updatedAt = LocalDateTime.now().withNano(0);
+        updatedAt = LocalDateTime.now();
     }
 }

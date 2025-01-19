@@ -50,8 +50,8 @@ public class MemoServiceImpl implements MemoService {
     private final QMemoVisibilityModel qMemoVisibility = QMemoVisibilityModel.memoVisibilityModel;
 
     @Override
-    public void create(AccountDto accountDto, CreateMemoDto createMemoDto) {
-        UserModel user = accountRepository.findById(accountDto.getUserId())
+    public void create(String email, CreateMemoDto createMemoDto) {
+        UserModel user = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         GroupModel group = null;
@@ -76,15 +76,16 @@ public class MemoServiceImpl implements MemoService {
     }
 
     @Override
-    public List<LocationDto> getLocations(AccountDto accountDto) {
-        Long userId = accountDto.getUserId();
+    public List<LocationDto> getLocations(String email) {
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         List<MemoModel> memos = queryFactory
                 .selectFrom(qMemo)
                 .leftJoin(qGroupMember).on(qMemo.group.eq(qGroupMember.group))
                 .leftJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
-                .where(qGroupMember.user.userId.eq(userId)
-                        .and(qMemoVisibility.user.userId.eq(userId))
+                .where(qGroupMember.user.eq(user)
+                        .and(qMemoVisibility.user.eq(user))
                         .and(qMemoVisibility.isHidden.eq(false)))
                 .orderBy(qMemo.createdAt.desc())
                 .fetch();

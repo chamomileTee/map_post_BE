@@ -43,9 +43,9 @@ public class MemoController {
     public ResponseEntity<Messenger> create(
             @RequestBody CreateMemoDto dto,
             HttpServletRequest request) {
-        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        String userEmail = (String) request.getAttribute("userEmail");
         try {
-            memoService.create(accountDto, dto);
+            memoService.create(userEmail, dto);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Create Memo: Ok")
                     .build());
@@ -59,9 +59,9 @@ public class MemoController {
 
     @GetMapping("/locations")
     public ResponseEntity<Messenger> getLocations(HttpServletRequest request) {
-        AccountDto accountDto = accountService.findByEmail((String) request.getAttribute("userEmail"));
+        String userEmail = (String) request.getAttribute("userEmail");
         try {
-            List<LocationDto> locations = memoService.getLocations(accountDto);
+            List<LocationDto> locations = memoService.getLocations(userEmail);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Get Locations: Ok")
                     .data(locations)

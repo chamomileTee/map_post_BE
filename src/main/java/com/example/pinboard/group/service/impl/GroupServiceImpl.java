@@ -1,6 +1,7 @@
 package com.example.pinboard.group.service.impl;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
+import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.account.repository.AccountRepository;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
@@ -72,5 +73,24 @@ public class GroupServiceImpl implements GroupService {
                     .collect(Collectors.toList());
             groupMemberRepository.saveAll(additionalMembers);
         }
+    }
+
+    @Override
+    public List<GroupNameDto> getGroupNames(AccountDto accountDto) {
+        UserModel user = accountRepository.findById(accountDto.getUserId())
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        List<GroupMemberModel> groupMembers = groupMemberRepository.findByUser(user);
+
+        if (groupMembers.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.DATA_NOT_FOUND);
+        }
+
+        return groupMembers.stream()
+                .map(member -> new GroupNameDto(
+                        member.getGroup().getGroupId(),
+                        member.getGroupName()
+                ))
+                .collect(Collectors.toList());
     }
 }

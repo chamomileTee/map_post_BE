@@ -3,8 +3,6 @@ package com.example.pinboard.group.service;
 import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.group.domain.dto.CreateGroupDto;
-import com.example.pinboard.group.domain.model.GroupModel;
-import com.example.pinboard.memo.domain.dto.CreateMemoDto;
 
 import java.util.List;
 
@@ -19,4 +17,6 @@ import java.util.List;
 
 public interface GroupService {
     void create(AccountDto accountDto, CreateGroupDto createGroupDto);
+
+    List<GroupNameDto> getGroupNames(AccountDto accountDto);
 }

@@ -55,4 +55,26 @@ public class GroupController {
                             .build());
         }
     }
+
+    @GetMapping("/names")
+    public ResponseEntity<Messenger> getGroupNames(HttpServletRequest request) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            AccountDto accountDto = accountService.findByEmail(userEmail);
+            List<GroupNameDto> groupNames = groupService.getGroupNames(accountDto);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Group Names: Ok")
+                    .data(groupNames)
+                    .build());
+        } catch (GlobalException e) {
+            log.error("Failed to retrieve group names for user {}: {}", userEmail, e.getMessage());
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Get Group Names: Failed")
+                            .build());
+        }
+    }
+
 }

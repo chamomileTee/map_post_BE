@@ -56,8 +56,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserNameDto searchName(String userName) {
-        UserModel user = accountRepository.findByName(userName)
+    public UserNameDto searchName(String name) {
+        UserModel user = accountRepository.findByName(name)
                 .orElse(null);
 
         return user != null ? UserNameDto.builder()
@@ -68,8 +68,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public void modifyName(AccountDto accountDto, String name) {
-        UserModel user = accountRepository.findById(accountDto.getUserId())
+    public void modifyName(String email, String name) {
+        UserModel user = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         if (accountRepository.findByName(name).isPresent()) {
@@ -83,8 +83,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public void modifyPassword(AccountDto accountDto, ModifyPasswordDto modifyPasswordDto) {
-        UserModel user = accountRepository.findById(accountDto.getUserId())
+    public void modifyPassword(String email, ModifyPasswordDto modifyPasswordDto) {
+        UserModel user = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(modifyPasswordDto.getPassword(), user.getPassword())) {
@@ -96,5 +96,15 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteAccount(String email) {
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
+        userActivityLogService.logUserActivity(user, ActivityType.ACCOUNT_DELETE);
+        userActivityLogRepository.flush();
+
+        accountRepository.delete(user);
+    }
 }

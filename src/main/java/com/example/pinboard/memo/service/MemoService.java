@@ -15,6 +15,6 @@ import java.util.List;
  * @since 2025-01-15
  */
 public interface MemoService {
-    void create(AccountDto accountDto, CreateMemoDto createMemoDto);
-    List<LocationDto> getLocations(AccountDto accountDto);
+    void create(String email, CreateMemoDto createMemoDto);
+    List<LocationDto> getLocations(String email);
 }

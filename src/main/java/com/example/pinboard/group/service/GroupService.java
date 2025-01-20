@@ -1,10 +1,7 @@
 package com.example.pinboard.group.service;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
-import com.example.pinboard.group.domain.dto.GroupNameDto;
-import com.example.pinboard.group.domain.dto.CreateGroupDto;
-import com.example.pinboard.group.domain.model.GroupModel;
-import com.example.pinboard.memo.domain.dto.CreateMemoDto;
+import com.example.pinboard.group.domain.dto.*;
 
 import java.util.List;
 
@@ -19,4 +16,12 @@ import java.util.List;
 
 public interface GroupService {
     void create(AccountDto accountDto, CreateGroupDto createGroupDto);
+    void updateGroup(Long groupId, String userEmail, GroupModifyDto groupModifyDto);
+    void changeGroupLeader(Long groupId, PutGroupLeaderDto requestDto, String userEmail);
+    void addMembers(Long groupId, MembersDto membersDto, String userEmail);
+    void deleteMembers(Long groupId, MembersDto membersDto, String userEmail);
+    void leaveGroup(Long groupId, String userEmail);
+
+    List<GroupNameDto> getGroupNames(AccountDto accountDto);
+    List<GroupListDto> getGroupList(String userEmail);
 }

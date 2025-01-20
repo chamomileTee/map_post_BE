@@ -14,6 +14,10 @@ import com.example.pinboard.group.service.GroupService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -209,11 +213,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupListDto> getGroupList(String userEmail) {
+    public Page<GroupListDto> getGroupList(String userEmail, int page, int size) {
         UserModel user = accountRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
-        List<GroupMemberModel> groupMembers = groupMemberRepository.findByUser(user);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<GroupMemberModel> groupMembersPage = groupMemberRepository.findByUser(user, pageable);
+
+        List<GroupMemberModel> groupMembers = groupMembersPage.getContent();
 
         if (groupMembers.isEmpty()) {
             throw new GlobalException(ExceptionStatus.DATA_NOT_FOUND);
@@ -222,26 +229,27 @@ public class GroupServiceImpl implements GroupService {
         List<Long> groupIds = groupMembers.stream()
                 .map(groupMember -> groupMember.getGroup().getGroupId())
                 .toList();
-        return groupIds.stream()
-                .map(groupId -> {
-                    List<GroupMemberModel> membersInGroup = groupMemberRepository.findByGroup_GroupId(groupId);
 
-                    List<GroupMembersDto> members = membersInGroup.stream()
-                            .map(member -> new GroupMembersDto(
-                                    member.getUser().getUserId(),
-                                    member.getUser().getUserName(),
-                                    member.getIsLeader()
-                            ))
-                            .collect(Collectors.toList());
-                    GroupMemberModel representative = membersInGroup.get(0);
+        Page<Long> groupIdsPage = new PageImpl<>(groupIds, pageable, groupIds.size());
 
-                    return new GroupListDto(
-                            representative.getGroup().getGroupId(),
-                            representative.getGroupName(),
-                            representative.getGroupDetail(),
-                            members
-                    );
-                })
-                .collect(Collectors.toList());
+        return groupIdsPage.map(groupId -> {
+            List<GroupMemberModel> membersInGroup = groupMemberRepository.findByGroup_GroupId(groupId);
+
+            List<GroupMembersDto> members = membersInGroup.stream()
+                    .map(member -> new GroupMembersDto(
+                            member.getUser().getUserId(),
+                            member.getUser().getUserName(),
+                            member.getIsLeader()
+                    ))
+                    .collect(Collectors.toList());
+            GroupMemberModel representative = membersInGroup.get(0);
+
+            return new GroupListDto(
+                    representative.getGroup().getGroupId(),
+                    representative.getGroupName(),
+                    representative.getGroupDetail(),
+                    members
+            );
+        });
     }
 }

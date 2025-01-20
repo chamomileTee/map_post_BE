@@ -12,6 +12,7 @@ import com.example.pinboard.group.repository.GroupMemberRepository;
 import com.example.pinboard.group.repository.GroupRepository;
 import com.example.pinboard.memo.domain.dto.CreateMemoDto;
 import com.example.pinboard.memo.domain.dto.LocationDto;
+import com.example.pinboard.memo.domain.dto.MemoDto;
 import com.example.pinboard.memo.domain.model.MemoModel;
 import com.example.pinboard.memo.domain.model.MemoVisibilityModel;
 import com.example.pinboard.memo.domain.model.QMemoModel;
@@ -19,11 +20,14 @@ import com.example.pinboard.memo.domain.model.QMemoVisibilityModel;
 import com.example.pinboard.memo.repository.MemoVisibilityRepository;
 import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.memo.repository.MemoRepository;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +37,7 @@ import java.util.stream.Collectors;
  * Memo Service Implementation
  * <p>Memo Service Implementation</p>
  *
- * @author Jihyeon Park(jihyeon2525)
+ * @author Jihyeon Park(jihyeon2525), JaeSeung Lee(fndl5759)
  * @version 1.0
  * @see MemoService
  * @see MemoRepository
@@ -101,17 +105,43 @@ public class MemoServiceImpl implements MemoService {
     }
 
     @Override
-    public List<LocationDto> getLocations(String email) {
+    public List<LocationDto> getLocations(String email, String option) {
         UserModel user = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
+        BooleanBuilder whereClause = new BooleanBuilder();
+        whereClause.and(qMemoVisibility.user.eq(user))
+                .and(qMemoVisibility.isHidden.eq(false));
+
+        if (option != null) {
+            if (option.equals("PRIVATE")) {
+                whereClause.and(qMemo.group.isNull());
+            } else {
+                try {
+                    Long groupId = Long.parseLong(option);
+                    if (!groupMemberRepository.existsByUserAndGroupGroupId(user, groupId)) {
+                        throw new GlobalException(ExceptionStatus.NO_PERMISSION); }
+                    whereClause.and(qMemo.group.groupId.eq(groupId));
+                } catch (NumberFormatException e) {
+                    throw new GlobalException(ExceptionStatus.BAD_REQUEST);
+                }
+            }
+        } else {
+                whereClause.and(
+                        qMemo.group.isNull().or(
+                                qMemo.group.in(
+                                        JPAExpressions.select(qGroupMember.group)
+                                                .from(qGroupMember)
+                                                .where(qGroupMember.user.eq(user))
+                                )
+                        )
+                );
+            }
+
         List<MemoModel> memos = queryFactory
                 .selectFrom(qMemo)
-                .leftJoin(qGroupMember).on(qMemo.group.eq(qGroupMember.group))
-                .leftJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
-                .where(qGroupMember.user.eq(user)
-                        .and(qMemoVisibility.user.eq(user))
-                        .and(qMemoVisibility.isHidden.eq(false)))
+                .innerJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
+                .where(whereClause)
                 .orderBy(qMemo.createdAt.desc())
                 .fetch();
 
@@ -122,5 +152,39 @@ public class MemoServiceImpl implements MemoService {
                         .longitude(memo.getLongitude())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public MemoDto getMemo(String email, Long memoId) {
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoModel memo = queryFactory
+                .selectFrom(qMemo)
+                .leftJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
+                .where(qMemo.memoId.eq(memoId)
+                        .and(qMemoVisibility.user.eq(user))
+                        .and(qMemoVisibility.isHidden.eq(false)))
+                .fetchOne();
+
+        if (memo == null) {
+            throw new GlobalException(ExceptionStatus.NO_PERMISSION);
+        }
+
+        String author;
+        if (memo.getGroup() != null) {
+            GroupMemberModel groupMember = groupMemberRepository.findByUserAndGroup(memo.getUser(), memo.getGroup());
+            author = groupMember.getGroupName() + " (" + memo.getUser().getUserName() + ")";
+        } else {
+            author = memo.getUser().getUserName();
+        }
+
+        return MemoDto.builder()
+                .memoId(memo.getMemoId())
+                .title(memo.getMemoTitle())
+                .content(memo.getMemoContent())
+                .author(author)
+                .date(memo.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .build();
     }
 }

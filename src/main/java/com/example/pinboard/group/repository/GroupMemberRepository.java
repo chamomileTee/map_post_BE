@@ -13,8 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface GroupMemberRepository extends JpaRepository<GroupMemberModel, Long> {
-    @Query("SELECT CASE WHEN COUNT(gm) > 0 THEN true ELSE false END FROM GroupMemberModel gm WHERE gm.user = :user AND gm.group = :group")
-    boolean existsByUserAndGroup(@Param("user") UserModel user, @Param("group") GroupModel group);
+    boolean existsByUserAndGroup(UserModel user, GroupModel group);
+
+    List<GroupMemberModel> findAllByGroup(GroupModel group);
 
     List<GroupMemberModel> findByUser(UserModel user);
     List<GroupMemberModel> findByGroup_GroupId(Long groupId);

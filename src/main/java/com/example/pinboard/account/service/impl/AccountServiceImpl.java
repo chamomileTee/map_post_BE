@@ -40,7 +40,7 @@ public class AccountServiceImpl implements AccountService {
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Create Profile: Email already exists");
         }
 
-        if (accountRepository.findByName(registerDto.getUserName()).isPresent()) {
+        if (accountRepository.findByUserName(registerDto.getUserName()).isPresent()) {
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Create Profile: Username already exists");
         }
 
@@ -57,7 +57,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public UserNameDto searchName(String name) {
-        UserModel user = accountRepository.findByName(name)
+        UserModel user = accountRepository.findByUserName(name)
                 .orElse(null);
 
         return user != null ? UserNameDto.builder()
@@ -72,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
         UserModel user = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
-        if (accountRepository.findByName(name).isPresent()) {
+        if (accountRepository.findByUserName(name).isPresent()) {
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Modify Profile: Username already exists");
         } else {
             userActivityLogService.logUserActivity(user, ActivityType.NICKNAME_CHANGE);

@@ -38,6 +38,7 @@ public class RefreshTokenModel {
     private String token;
 
     @Column(name = "is_valid")
+    @Builder.Default
     private Boolean isValid = true;
 
     @CreatedDate

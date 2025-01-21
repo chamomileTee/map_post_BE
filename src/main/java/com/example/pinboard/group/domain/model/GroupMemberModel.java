@@ -47,6 +47,7 @@ public class GroupMemberModel {
     private String groupDetail;
 
     @Column(name = "is_leader")
+    @Builder.Default
     private Boolean isLeader = false;
 
     @CreatedDate

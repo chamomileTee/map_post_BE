@@ -37,5 +37,6 @@ public class MemoVisibilityModel {
     private MemoModel memo;
 
     @Column(name = "is_hidden")
+    @Builder.Default
     private Boolean isHidden = false;
 }

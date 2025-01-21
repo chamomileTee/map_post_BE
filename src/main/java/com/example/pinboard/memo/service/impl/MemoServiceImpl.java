@@ -228,22 +228,25 @@ public class MemoServiceImpl implements MemoService {
             );
         }
 
-        Page<MemoModel> memosPage = new PageImpl<>(
-                queryFactory
-                        .selectFrom(qMemo)
-                        .innerJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
-                        .where(whereClause)
-                        .orderBy(qMemo.createdAt.desc())
-                        .offset(pageable.getOffset())
-                        .limit(pageable.getPageSize())
-                        .fetch(),
-                pageable,
-                queryFactory
-                        .selectFrom(qMemo)
-                        .innerJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
-                        .where(whereClause)
-                        .fetchCount()
-        );
+        List<MemoModel> memos = queryFactory
+                .selectFrom(qMemo)
+                .innerJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
+                .where(whereClause)
+                .orderBy(qMemo.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long result = queryFactory
+                .select(qMemo.count())
+                .from(qMemo)
+                .innerJoin(qMemoVisibility).on(qMemo.memoId.eq(qMemoVisibility.memo.memoId))
+                .where(whereClause)
+                .fetchOne();
+
+        long total = Optional.ofNullable(result).orElse(0L);
+
+        Page<MemoModel> memosPage = new PageImpl<>(memos, pageable, total);
 
         if (memosPage.isEmpty()) {
             throw new GlobalException(ExceptionStatus.DATA_NOT_FOUND);
@@ -261,7 +264,7 @@ public class MemoServiceImpl implements MemoService {
             }
 
             if (!memo.getMemoVisibilities().isEmpty()) {
-                isHidden = memo.getMemoVisibilities().get(0).getIsHidden();  // 예시로 첫 번째 요소의 isHidden을 가져옴
+                isHidden = memo.getMemoVisibilities().get(0).getIsHidden();
             }
 
             return MemoListDto.builder()
@@ -274,6 +277,7 @@ public class MemoServiceImpl implements MemoService {
                     .build();
         });
     }
+
 
     public MemoFullDto getMemoFull(Long memoId, String userEmail) {
         MemoModel memo = memoRepository.findById(memoId)

@@ -113,9 +113,10 @@ public class MemoController {
                     .data(memoPage.getContent())
                     .build());
         } catch (GlobalException e) {
+            log.error("Error fetching memo list: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Get Memo List: Failed")
                             .data(null)
                             .build());
         }
@@ -124,8 +125,7 @@ public class MemoController {
     @GetMapping("/{memoId}/full")
     public ResponseEntity<?> getMemoFull(
             HttpServletRequest request,
-            @PathVariable Long memoId
-            ) {
+            @PathVariable Long memoId) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
@@ -136,6 +136,7 @@ public class MemoController {
                     .data(List.of(memoFullDto))
                     .build());
         } catch (GlobalException e) {
+            log.error("Error fetching full memo details for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Get Memo Full: Failed")
@@ -148,8 +149,7 @@ public class MemoController {
     public ResponseEntity<Messenger> createComment(
             HttpServletRequest request,
             @PathVariable Long memoId,
-            @RequestBody CreateCommentDto createCommentDto
-    ) {
+            @RequestBody CreateCommentDto createCommentDto) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
@@ -161,6 +161,7 @@ public class MemoController {
                     .build());
 
         } catch (GlobalException e) {
+            log.error("Error creating comment for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Create Comment: Failed")
@@ -172,8 +173,7 @@ public class MemoController {
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Messenger> deleteComment(
             HttpServletRequest request,
-            @PathVariable Long commentId
-    ) {
+            @PathVariable Long commentId) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
@@ -185,6 +185,7 @@ public class MemoController {
                     .build());
 
         } catch (GlobalException e) {
+            log.error("Error deleting comment with commentId {}: {}", commentId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Delete Comment: Failed")
@@ -193,12 +194,11 @@ public class MemoController {
         }
     }
 
-    @PatchMapping("/api/memos/{memoId}")
+    @PatchMapping("/{memoId}")
     public ResponseEntity<Messenger> modifyMemo(
             HttpServletRequest request,
             @PathVariable Long memoId,
-            @RequestBody MemoModifyDto memoModifyDto
-    ) {
+            @RequestBody MemoModifyDto memoModifyDto) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
@@ -210,6 +210,7 @@ public class MemoController {
                     .build());
 
         } catch (GlobalException e) {
+            log.error("Error modifying memo with memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Modify Memo: Failed")
@@ -218,11 +219,10 @@ public class MemoController {
         }
     }
 
-    @DeleteMapping("/api/memos/{memoId}")
+    @DeleteMapping("/{memoId}")
     public ResponseEntity<Messenger> deleteMemo(
             HttpServletRequest request,
-            @PathVariable Long memoId
-    ) {
+            @PathVariable Long memoId) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
@@ -234,6 +234,7 @@ public class MemoController {
                     .build());
 
         } catch (GlobalException e) {
+            log.error("Error deleting memo with memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Delete Memo: Failed")
@@ -266,6 +267,7 @@ public class MemoController {
                     .build());
 
         } catch (GlobalException e) {
+            log.error("Error updating memo visibility for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Modify Memo Visibility: Failed")
@@ -274,3 +276,4 @@ public class MemoController {
         }
     }
 }
+

@@ -4,9 +4,7 @@ import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.group.domain.dto.*;
-import com.example.pinboard.security.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
-import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.example.pinboard.common.domain.dto.Messenger;
-import com.example.pinboard.common.domain.vo.ExceptionStatus;
-import com.example.pinboard.common.domain.vo.SuccessStatus;
 
 import java.util.List;
 
@@ -51,6 +47,7 @@ public class GroupController {
                     .message("Create Group: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error creating group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Create Group: Failed")
@@ -71,6 +68,7 @@ public class GroupController {
                     .message("Group update: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error updating group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message("Group update: Failed")
@@ -84,7 +82,6 @@ public class GroupController {
             @RequestBody PutGroupLeaderDto requestDto,
             HttpServletRequest request) {
         String userEmail = (String) request.getAttribute("userEmail");
-        Long newLeaderUserId = requestDto.getUserId();
 
         try {
             groupService.changeGroupLeader(groupId, requestDto, userEmail);
@@ -133,9 +130,10 @@ public class GroupController {
                     .message("Delete Members: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error deleting members", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Delete Members: Failed")
                             .build());
         }
     }
@@ -151,9 +149,10 @@ public class GroupController {
                     .message("Leave Group: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error leaving group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Leave Group: Failed")
                             .build());
         }
     }
@@ -194,11 +193,11 @@ public class GroupController {
                     .data(groupListPage)
                     .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Messenger.builder()
-                    .message("Get Group List: Failed")
-                    .data(null)
-                    .build());
+            log.error("Failed to retrieve group list", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Messenger.builder()
+                            .message("Get Group List: Failed")
+                            .build());
         }
     }
-
 }

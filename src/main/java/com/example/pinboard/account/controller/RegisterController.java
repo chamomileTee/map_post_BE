@@ -37,14 +37,16 @@ public class RegisterController {
                     .message("Register Account: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error registering account: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Register Account: " + e.getMessage())
                             .build());
         } catch (Exception e) {
+            log.error("Error registering account: {}", e.getMessage(), e);
             return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Register Account: Failed")
+                            .message("Register Account: " + e.getMessage())
                             .build());
         }
     }

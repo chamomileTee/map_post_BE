@@ -37,11 +37,11 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void register(RegisterDto registerDto) {
         if (accountRepository.findByEmail(registerDto.getEmail()).isPresent()) {
-            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Create Profile: Email already exists");
+            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Email already exists");
         }
 
         if (accountRepository.findByUserName(registerDto.getUserName()).isPresent()) {
-            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Create Profile: Username already exists");
+            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Username already exists");
         }
 
         UserModel newUser = UserModel.builder()
@@ -73,7 +73,7 @@ public class AccountServiceImpl implements AccountService {
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
         if (accountRepository.findByUserName(name).isPresent()) {
-            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Modify Profile: Username already exists");
+            throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Username already exists");
         } else {
             userActivityLogService.logUserActivity(user, ActivityType.NICKNAME_CHANGE);
             userActivityLogRepository.flush();

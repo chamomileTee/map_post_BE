@@ -51,9 +51,10 @@ public class MemoController {
                     .message("Create Memo: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error creating memo: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Create Memo: " + e.getMessage())
                             .build());
         }
     }
@@ -70,9 +71,10 @@ public class MemoController {
                     .data(locations)
                     .build());
         } catch (GlobalException e) {
+            log.error("Error fetching locations: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Get Locations: " + e.getMessage())
                             .build());
         }
     }
@@ -89,9 +91,10 @@ public class MemoController {
                     .data(memo)
                     .build());
         } catch (GlobalException e) {
+            log.error("Error fetching memo: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Get Memo: " + e.getMessage())
                             .build());
         }
 

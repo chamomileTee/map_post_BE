@@ -8,7 +8,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  #REPOSITORY: ${{ github.repository }}
   IMAGE_NAME: pinboard
 
 jobs:
@@ -110,7 +109,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWERCASE }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           outputs: type=registry
 
   deploy:
@@ -125,9 +124,10 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ env.REGISTRY }}/${{ env.REPO_LOWERCASE }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}
-            docker stop pinboard-app || true
-            docker rm pinboard-app || true
+            docker pull ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            if docker ps -a --format '{{.Names}}' | grep -q '^pinboard-app$'; then
+              docker stop pinboard-app
+              docker rm pinboard-app
             docker run -d --name pinboard-app -p 8484:8484 \
               -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
@@ -135,4 +135,4 @@ jobs:
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e ENCRYPTION_SECRET_KEY=${{ secrets.ENCRYPTION_SECRET_KEY }} \
               -e ENCRYPTION_INIT_VECTOR=${{ secrets.ENCRYPTION_INIT_VECTOR }} \
-              ${{ env.REGISTRY }}/${{ env.REPO_LOWERCASE }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}
+              ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest

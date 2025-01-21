@@ -27,6 +27,68 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
+      - name: Create application.yml
+        run: |
+          mkdir -p src/main/resources 
+          cat <<EOF > src/main/resources/application.yml
+          spring:
+            application:
+              name: PINBOARD
+            mvc:
+              view:
+                prefix: /WEB-INF/views/
+                suffix: .jsp
+            datasource:
+              url: ${DB_URL}
+              username: ${DB_USERNAME}
+              password: ${DB_PASSWORD}
+            jpa:
+              database-platform: org.hibernate.dialect.MySQLDialect
+              hibernate:
+                ddl-auto: update
+              show-sql: true
+
+          # Additional configurations for encoding
+          spring.datasource.hikari.connection-init-sql: SET NAMES utf8mb4
+
+          server:
+            port: 8484
+
+          springdoc:
+            swagger-ui:
+              path: /pinboard-api
+              enabled: true
+              groups-order: DESC
+              operations-sorter: method
+              disable-swagger-default-url: true
+              with-credentials: true
+            api-docs:
+              path: /v3/api-docs
+              enabled: true
+            packages-to-scan: com.example.pinboard
+
+          jwt:
+            secret: ${JWT_SECRET}
+            token:
+              access:
+                expiration: 1800000
+                prefix: Bearer
+                header: Authorization
+              refresh:
+                expiration: 1209600000
+
+          encryption:
+            secret-key: ${ENCRYPTION_SECRET_KEY}
+            init-vector: ${ENCRYPTION_INIT_VECTOR}
+          EOF
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_SECRET_KEY: ${{ secrets.ENCRYPTION_SECRET_KEY }}
+          ENCRYPTION_INIT_VECTOR: ${{ secrets.ENCRYPTION_INIT_VECTOR }}
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -45,7 +107,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:masterg-${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:master-${{ github.sha }}
 
   deploy:
     needs: build-and-push

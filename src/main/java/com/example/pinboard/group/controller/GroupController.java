@@ -10,6 +10,7 @@ import com.example.pinboard.group.domain.dto.GroupNameDto;
 import com.example.pinboard.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -179,15 +180,18 @@ public class GroupController {
     }
 
     @GetMapping
-    public ResponseEntity<Messenger> getGroupList(HttpServletRequest request) {
+    public ResponseEntity<Messenger> getGroupList(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size) {
         String userEmail = (String) request.getAttribute("userEmail");
 
         try {
-            List<GroupListDto> groupList = groupService.getGroupList(userEmail);
+            Page<GroupListDto> groupListPage = groupService.getGroupList(userEmail, page, size);
 
             return ResponseEntity.ok(Messenger.builder()
                     .message("Get Group List: Ok")
-                    .data(groupList)
+                    .data(groupListPage)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Messenger.builder()
@@ -196,4 +200,5 @@ public class GroupController {
                     .build());
         }
     }
+
 }

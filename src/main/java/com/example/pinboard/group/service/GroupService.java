@@ -2,6 +2,7 @@ package com.example.pinboard.group.service;
 
 import com.example.pinboard.account.domain.dto.AccountDto;
 import com.example.pinboard.group.domain.dto.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -23,5 +24,5 @@ public interface GroupService {
     void leaveGroup(Long groupId, String userEmail);
 
     List<GroupNameDto> getGroupNames(AccountDto accountDto);
-    List<GroupListDto> getGroupList(String userEmail);
+    Page<GroupListDto> getGroupList(String userEmail, int page, int size);
 }

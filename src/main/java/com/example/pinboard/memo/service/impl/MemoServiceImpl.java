@@ -10,20 +10,16 @@ import com.example.pinboard.group.domain.model.GroupModel;
 import com.example.pinboard.group.domain.model.QGroupMemberModel;
 import com.example.pinboard.group.repository.GroupMemberRepository;
 import com.example.pinboard.group.repository.GroupRepository;
-import com.example.pinboard.memo.domain.dto.CreateMemoDto;
-import com.example.pinboard.memo.domain.dto.LocationDto;
-import com.example.pinboard.memo.domain.dto.MemoDto;
-import com.example.pinboard.memo.domain.dto.MemoListDto;
-import com.example.pinboard.memo.domain.model.MemoModel;
-import com.example.pinboard.memo.domain.model.MemoVisibilityModel;
-import com.example.pinboard.memo.domain.model.QMemoModel;
-import com.example.pinboard.memo.domain.model.QMemoVisibilityModel;
+import com.example.pinboard.memo.domain.dto.*;
+import com.example.pinboard.memo.domain.model.*;
+import com.example.pinboard.memo.repository.MemoCommentRepository;
 import com.example.pinboard.memo.repository.MemoVisibilityRepository;
 import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.memo.repository.MemoRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +54,7 @@ public class MemoServiceImpl implements MemoService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final MemoVisibilityRepository memoVisibilityRepository;
+    private final MemoCommentRepository memoCommentRepository;
 
     private final JPAQueryFactory queryFactory;
     private final QMemoModel qMemo = QMemoModel.memoModel;
@@ -275,5 +273,125 @@ public class MemoServiceImpl implements MemoService {
                     .isHidden(isHidden)
                     .build();
         });
+    }
+
+    public MemoFullDto getMemoFull(Long memoId, String userEmail) {
+        MemoModel memo = memoRepository.findById(memoId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoVisibilityModel memoVisibility = memoVisibilityRepository.findByMemoAndUser(memo, user)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.NO_PERMISSION));
+
+        List<MemoCommentModel> comments = memoCommentRepository.findByMemo(memo);
+
+        List<MemoCommentDto> commentDtos = comments.stream()
+                .map(comment -> MemoCommentDto.builder()
+                        .commentId(comment.getCommentId())
+                        .content(comment.getContent())
+                        .userName(comment.getUser().getUserName())
+                        .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy. MM. dd. HH:mm")))
+                        .build())
+                .collect(Collectors.toList());
+
+        Boolean isAuthor = memo.getUser().getEmail().equals(userEmail);
+
+        return MemoFullDto.builder()
+                .memoId(memo.getMemoId())
+                .title(memo.getMemoTitle())
+                .content(memo.getMemoContent())
+                .author(memo.getUser().getUserName())
+                .createdAt(memo.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy. MM. dd. HH:mm")))
+                .isHidden(memoVisibility.getIsHidden())
+                .isAuthor(isAuthor)
+                .comments(commentDtos)
+                .build();
+    }
+
+    @Override
+    public void createComment(Long memoId, String email, CreateCommentDto createCommentDto) {
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoModel memo = memoRepository.findById(memoId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        MemoVisibilityModel memoVisibility = memoVisibilityRepository.findByMemoAndUser(memo, user)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.NO_PERMISSION));
+
+        MemoCommentModel newComment = MemoCommentModel.builder()
+                .content(createCommentDto.getContent())
+                .memo(memo)
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        memoCommentRepository.save(newComment);
+    }
+
+    @Override
+    public void deleteComment(Long commentId, String email) {
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoCommentModel comment = memoCommentRepository.findById(commentId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        if (!comment.getUser().getEmail().equals(email)) {
+            throw new GlobalException(ExceptionStatus.NO_PERMISSION);
+        }
+        memoCommentRepository.delete(comment);
+    }
+
+    @Override
+    public void modifyMemo(Long memoId, String userEmail, MemoModifyDto memoModifyDto) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoModel memo = memoRepository.findById(memoId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        if (!memo.getUser().getEmail().equals(userEmail)) {
+            throw new GlobalException(ExceptionStatus.NO_PERMISSION);
+        }
+        memo.setMemoTitle(memoModifyDto.getTitle());
+        memo.setMemoContent(memoModifyDto.getContent());
+
+        memoRepository.save(memo);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMemo(Long memoId, String userEmail) {
+        UserModel user = accountRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoModel memo = memoRepository.findById(memoId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        if (!memo.getUser().getEmail().equals(userEmail)) {
+            throw new GlobalException(ExceptionStatus.NO_PERMISSION);
+        }
+
+        memoVisibilityRepository.deleteByMemo(memo);
+        memoCommentRepository.deleteByMemo(memo);
+        memoRepository.delete(memo);
+    }
+
+    public void updateMemoVisibility(Long memoId, boolean isHidden, String email) {
+        MemoModel memo = memoRepository.findById(memoId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND));
+
+        UserModel user = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+
+        MemoVisibilityModel memoVisibility = memoVisibilityRepository.findByMemoAndUser(memo, user)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.NO_PERMISSION));
+
+        memoVisibility.setIsHidden(!memoVisibility.getIsHidden());
+
+        memoVisibilityRepository.save(memoVisibility);
     }
 }

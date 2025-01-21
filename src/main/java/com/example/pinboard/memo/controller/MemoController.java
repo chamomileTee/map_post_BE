@@ -6,10 +6,7 @@ import com.example.pinboard.account.service.AccountService;
 import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
-import com.example.pinboard.memo.domain.dto.CreateMemoDto;
-import com.example.pinboard.memo.domain.dto.LocationDto;
-import com.example.pinboard.memo.domain.dto.MemoDto;
-import com.example.pinboard.memo.domain.dto.MemoListDto;
+import com.example.pinboard.memo.domain.dto.*;
 import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.security.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Provider;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Memo Controller
@@ -118,6 +116,159 @@ public class MemoController {
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message(e.getMessage())
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @GetMapping("/{memoId}/full")
+    public ResponseEntity<?> getMemoFull(
+            HttpServletRequest request,
+            @PathVariable Long memoId
+            ) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            MemoFullDto memoFullDto = memoService.getMemoFull(memoId, userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Memo Full: Ok")
+                    .data(List.of(memoFullDto))
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Get Memo Full: Failed")
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @PostMapping("/view-post/{memoId}/comments")
+    public ResponseEntity<Messenger> createComment(
+            HttpServletRequest request,
+            @PathVariable Long memoId,
+            @RequestBody CreateCommentDto createCommentDto
+    ) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            memoService.createComment(memoId, userEmail, createCommentDto);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Create Comment: Ok")
+                    .data(null)
+                    .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Create Comment: Failed")
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Messenger> deleteComment(
+            HttpServletRequest request,
+            @PathVariable Long commentId
+    ) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            memoService.deleteComment(commentId, userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Delete Comment: Ok")
+                    .data(null)
+                    .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Delete Comment: Failed")
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @PatchMapping("/api/memos/{memoId}")
+    public ResponseEntity<Messenger> modifyMemo(
+            HttpServletRequest request,
+            @PathVariable Long memoId,
+            @RequestBody MemoModifyDto memoModifyDto
+    ) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            memoService.modifyMemo(memoId, userEmail, memoModifyDto);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Modify Memo: Ok")
+                    .data(null)
+                    .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Modify Memo: Failed")
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @DeleteMapping("/api/memos/{memoId}")
+    public ResponseEntity<Messenger> deleteMemo(
+            HttpServletRequest request,
+            @PathVariable Long memoId
+    ) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            memoService.deleteMemo(memoId, userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Delete Memo: Ok")
+                    .data(null)
+                    .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Delete Memo: Failed")
+                            .data(null)
+                            .build());
+        }
+    }
+
+    @PutMapping("/{memoId}/visibility")
+    public ResponseEntity<Messenger> updateMemoVisibility(
+            HttpServletRequest request,
+            @PathVariable Long memoId,
+            @RequestBody(required = false) Map<String, String> requestBody) {
+
+        String userEmail = (String) request.getAttribute("userEmail");
+        boolean isHidden = false; // 기본값은 false
+
+        // 요청 본문에 isHidden이 있다면 해당 값을 확인하여 true/false로 설정
+        if (requestBody != null && requestBody.containsKey("isHidden")) {
+            String isHiddenValue = requestBody.get("isHidden");
+            isHidden = "1".equals(isHiddenValue);
+        }
+
+        try {
+            memoService.updateMemoVisibility(memoId, isHidden, userEmail);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Modify Memo Visibility: Ok")
+                    .data(null)
+                    .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Modify Memo Visibility: Failed")
                             .data(null)
                             .build());
         }

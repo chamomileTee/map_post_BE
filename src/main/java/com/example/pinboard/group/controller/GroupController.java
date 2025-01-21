@@ -48,12 +48,12 @@ public class GroupController {
         try {
             groupService.create(accountDto, dto);
             return ResponseEntity.ok(Messenger.builder()
-                    .message("Create Memo: Ok")
+                    .message("Create Group: Ok")
                     .build());
         } catch (GlobalException e) {
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Create Group: Failed")
                             .build());
         }
     }

@@ -50,7 +50,7 @@ public class GroupController {
             log.error("Error creating group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Create Group: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -71,7 +71,7 @@ public class GroupController {
             log.error("Error updating group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Group update: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -92,7 +92,7 @@ public class GroupController {
             log.error("Error changing group leader", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Set Leader: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -114,7 +114,7 @@ public class GroupController {
             log.error("Error adding members to group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Add Members: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -133,7 +133,7 @@ public class GroupController {
             log.error("Error deleting members", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Delete Members: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -152,7 +152,7 @@ public class GroupController {
             log.error("Error leaving group", e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Leave Group: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -173,7 +173,7 @@ public class GroupController {
             log.error("Failed to retrieve group names for user {}: {}", userEmail, e.getMessage());
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Get Group Names: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }
@@ -196,7 +196,7 @@ public class GroupController {
             log.error("Failed to retrieve group list", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Messenger.builder()
-                            .message("Get Group List: Failed")
+                            .message(e.getMessage())
                             .build());
         }
     }

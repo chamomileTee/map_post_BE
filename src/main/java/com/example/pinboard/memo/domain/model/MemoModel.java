@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * MemoModel
@@ -55,6 +56,9 @@ public class MemoModel {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "memo", fetch = FetchType.LAZY)
+    private List<MemoVisibilityModel> memoVisibilities;
 
     @PrePersist
     protected void onCreate() {

@@ -8,11 +8,14 @@ import com.example.pinboard.common.domain.vo.ExceptionStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.memo.domain.dto.CreateMemoDto;
 import com.example.pinboard.memo.domain.dto.LocationDto;
+import com.example.pinboard.memo.domain.dto.MemoDto;
+import com.example.pinboard.memo.domain.dto.MemoListDto;
 import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.security.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,10 +61,12 @@ public class MemoController {
     }
 
     @GetMapping("/locations")
-    public ResponseEntity<Messenger> getLocations(HttpServletRequest request) {
+    public ResponseEntity<Messenger> getLocations(
+            HttpServletRequest request,
+            @RequestParam(required = false) String option) {
         String userEmail = (String) request.getAttribute("userEmail");
         try {
-            List<LocationDto> locations = memoService.getLocations(userEmail);
+            List<LocationDto> locations = memoService.getLocations(userEmail, option);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Get Locations: Ok")
                     .data(locations)
@@ -70,6 +75,50 @@ public class MemoController {
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
                             .message(e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/{memoId}")
+    public ResponseEntity<Messenger> getMemo(
+            HttpServletRequest request,
+            @PathVariable("memoId") Long memoId) {
+        String userEmail = (String) request.getAttribute("userEmail");
+        try {
+            MemoDto memo = memoService.getMemo(userEmail, memoId);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Memo: Ok")
+                    .data(memo)
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<Messenger> getMemoList(
+            HttpServletRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size,
+            @RequestParam(required = false) String option) {
+        String userEmail = (String) request.getAttribute("userEmail");
+
+        try {
+            Page<MemoListDto> memoPage = memoService.getMemoList(userEmail, page, size, option);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Get Memo List: Ok")
+                    .data(memoPage.getContent())
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .data(null)
                             .build());
         }
     }

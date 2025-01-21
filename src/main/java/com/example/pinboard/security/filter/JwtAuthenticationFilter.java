@@ -80,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             } else {
                 log.warn("Both access and refresh tokens are invalid or missing for request: {}", requestUrl);
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Authentication failed. Please log in again.");
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Authentication failed. Please login.");
             }
 
             filterChain.doFilter(request, response);

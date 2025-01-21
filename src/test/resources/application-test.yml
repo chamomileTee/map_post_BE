@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: PINBOARD
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+
+server:
+  port: 8484
+
+springdoc:
+  swagger-ui:
+    path: /pinboard-api
+    enabled: true
+    groups-order: DESC
+    operations-sorter: method
+    disable-swagger-default-url: true
+    with-credentials: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  packages-to-scan: com.example.pinboard
+
+jwt:
+  secret: testJwtSecretKey
+  token:
+    access:
+      expiration: 300000
+      prefix: Bearer
+      header: Authorization
+    refresh:
+      expiration: 600000
+
+encryption:
+  secret-key: testEncryptionKey
+  init-vector: testInitVector
+
+logging:
+  level:
+    org.springframework: DEBUG
+    com.example.pinboard: DEBUG

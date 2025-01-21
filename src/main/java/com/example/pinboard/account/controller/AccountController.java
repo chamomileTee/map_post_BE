@@ -41,9 +41,10 @@ public class AccountController {
                     .data(accountDto)
                     .build());
         } catch (GlobalException e) {
+            log.error("Error fetching profile: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Get Profile: " + e.getMessage())
                             .build());
         }
     }
@@ -57,9 +58,10 @@ public class AccountController {
                     .data(userNameDto)
                     .build());
         } catch (GlobalException e) {
+            log.error("Error searching by username: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Search Name: " + e.getMessage())
                             .build());
         }
     }
@@ -75,9 +77,10 @@ public class AccountController {
                     .message("Modify Name: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error modifying username: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Modify Name: " + e.getMessage())
                             .build());
         }
     }
@@ -93,9 +96,10 @@ public class AccountController {
                     .message("Modify Password: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error modifying password: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Modify Password: " + e.getMessage())
                             .build());
         }
     }
@@ -109,9 +113,10 @@ public class AccountController {
                     .message("Delete Account: Ok")
                     .build());
         } catch (GlobalException e) {
+            log.error("Error deleting account: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message(e.getMessage())
+                            .message("Delete Account: " + e.getMessage())
                             .build());
         }
     }

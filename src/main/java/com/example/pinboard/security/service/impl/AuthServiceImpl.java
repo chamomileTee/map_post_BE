@@ -49,63 +49,79 @@ public class AuthServiceImpl implements AuthService {
         String email = dto.getEmail();
         String password = dto.getPassword();
 
-        return accountRepository.findByEmail(email)
-                .map(user -> {
-                    if (!passwordEncoder.matches(password, user.getPassword())) {
-                        throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
-                    }
+        try {
+            return accountRepository.findByEmail(email)
+                    .map(user -> {
+                        if (!passwordEncoder.matches(password, user.getPassword())) {
+                            throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
+                        }
 
-                    String accessToken = jwtTokenProvider.generateAccessToken(email);
-                    String refreshToken = jwtTokenProvider.generateRefreshToken(email);
+                        String accessToken = jwtTokenProvider.generateAccessToken(email);
+                        String refreshToken = jwtTokenProvider.generateRefreshToken(email);
 
-                    log.info("AccessToken for user {}: {}", email, accessToken);
-                    log.info("RefreshToken for user {}: {}", email, refreshToken);
+                        log.info("AccessToken for user {}: {}", email, accessToken);
+                        log.info("RefreshToken for user {}: {}", email, refreshToken);
 
-                    refreshTokenService.createRefreshToken(user, refreshToken); //DB에 refreshToken 저장
+                        refreshTokenService.createRefreshToken(user, refreshToken); //DB에 refreshToken 저장
 
-                    ResponseCookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
+                        ResponseCookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
 
-                    userActivityLogService.logUserActivity(user, ActivityType.LOGIN);
+                        userActivityLogService.logUserActivity(user, ActivityType.LOGIN);
 
-                    return ResponseEntity.ok()
-                            .header("Authorization", "Bearer " + accessToken)
-                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .body(Messenger.builder()
-                                    .message("Login: " + SuccessStatus.OK.getMessage())
-                                    .build());
-                })
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+                        return ResponseEntity.ok()
+                                .header("Authorization", "Bearer " + accessToken)
+                                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .body(Messenger.builder()
+                                        .message("Login: Ok")
+                                        .build());
+                    })
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+        } catch (GlobalException e) {
+            log.error("Error logging in: {}", e.getMessage(), e);
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Login: " + e.getMessage())
+                            .build());
+        }
     }
 
     @Override
     @Transactional
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        // AccessToken은 클라이언트에서 제거)
+        try {
+            // AccessToken은 클라이언트에서 제거)
 
-        //DB에서 RefreshToken 삭제
-        String refreshToken = jwtTokenProvider.extractRefreshTokenFromCookie(request);
-        if (refreshToken != null) {
-            refreshTokenService.invalidateRefreshToken(refreshToken);
+            //DB에서 RefreshToken 삭제
+            String refreshToken = jwtTokenProvider.extractRefreshTokenFromCookie(request);
+            if (refreshToken != null) {
+                refreshTokenService.invalidateRefreshToken(refreshToken);
+            }
+
+            //RefreshToken 쿠키 삭제
+            ResponseCookie deletedCookie = ResponseCookie.from("refresh_token", "")
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+
+            String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
+            UserModel user = accountRepository.findByEmail(email)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
+            userActivityLogService.logUserActivity(user, ActivityType.LOGOUT);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, deletedCookie.toString())
+                    .body(Messenger.builder()
+                            .message("Logout: Ok")
+                            .build());
+        } catch (GlobalException e) {
+            log.error("Error logging out: {}", e.getMessage(), e);
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Logout: " +  e.getMessage())
+                            .build());
         }
-
-        //RefreshToken 쿠키 삭제
-        ResponseCookie deletedCookie = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
-        UserModel user = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
-        userActivityLogService.logUserActivity(user, ActivityType.LOGOUT);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deletedCookie.toString())
-                .body(Messenger.builder()
-                        .message("Logout: " + SuccessStatus.OK.getMessage())
-                        .build());
     }
 }

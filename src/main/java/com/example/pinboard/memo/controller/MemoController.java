@@ -119,7 +119,7 @@ public class MemoController {
             log.error("Error fetching memo list: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Get Memo List: Failed")
+                            .message("Get Memo List: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -142,7 +142,7 @@ public class MemoController {
             log.error("Error fetching full memo details for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Get Memo Full: Failed")
+                            .message("Get Memo Full: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -167,7 +167,7 @@ public class MemoController {
             log.error("Error creating comment for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Create Comment: Failed")
+                            .message("Create Comment: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -191,7 +191,7 @@ public class MemoController {
             log.error("Error deleting comment with commentId {}: {}", commentId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Delete Comment: Failed")
+                            .message("Delete Comment: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -216,7 +216,7 @@ public class MemoController {
             log.error("Error modifying memo with memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Modify Memo: Failed")
+                            .message("Modify Memo: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -240,7 +240,7 @@ public class MemoController {
             log.error("Error deleting memo with memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Delete Memo: Failed")
+                            .message("Delete Memo: " + e.getMessage())
                             .data(null)
                             .build());
         }
@@ -273,7 +273,7 @@ public class MemoController {
             log.error("Error updating memo visibility for memoId {}: {}", memoId, e.getMessage(), e);
             return ResponseEntity.status(e.getStatus().getHttpStatus())
                     .body(Messenger.builder()
-                            .message("Modify Memo Visibility: Failed")
+                            .message("Modify Memo Visibility: " + e.getMessage())
                             .data(null)
                             .build());
         }

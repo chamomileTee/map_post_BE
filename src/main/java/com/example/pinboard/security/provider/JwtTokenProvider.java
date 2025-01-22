@@ -104,7 +104,7 @@ public class JwtTokenProvider {
                 .secure(true)
                 .path("/") //이 하위 path에서만 cookie 전송
                 .maxAge(refreshTokenExpiration / 1000)
-                .sameSite("none") //모든 요청에 서드파티 쿠키와, 퍼스트파티 쿠키가 전송
+                .sameSite("Lax") //모든 요청에 서드파티 쿠키와, 퍼스트파티 쿠키가 전송
                 .build();
     }
 

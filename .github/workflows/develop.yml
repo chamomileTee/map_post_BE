@@ -49,6 +49,10 @@ jobs:
 
           spring.datasource.hikari.connection-init-sql: SET NAMES utf8mb4
 
+          cors:
+            allow:
+              origins: ${CROSS_ORIGINS}
+
           server:
             port: 8484
 
@@ -86,6 +90,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ENCRYPTION_SECRET_KEY: ${{ secrets.ENCRYPTION_SECRET_KEY }}
           ENCRYPTION_INIT_VECTOR: ${{ secrets.ENCRYPTION_INIT_VECTOR }}
+          CROSS_ORIGINS: ${{ secrets.CROSS_ORIGINS }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -133,4 +138,5 @@ jobs:
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e ENCRYPTION_SECRET_KEY=${{ secrets.ENCRYPTION_SECRET_KEY }} \
               -e ENCRYPTION_INIT_VECTOR=${{ secrets.ENCRYPTION_INIT_VECTOR }} \
+              -e CROSS_ORIGINS=${{ secrets.CROSS_ORIGINS }} \
               ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest

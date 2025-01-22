@@ -77,8 +77,17 @@ public class JwtTokenProvider {
     }
 
     public String getUserEmailFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.getSubject();
+        if (token == null || token.isEmpty()) {
+            log.warn("Attempt to get user email from null or empty token");
+            return null;
+        }
+        try {
+            Claims claims = getClaims(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            log.error("Error parsing token: ", e);
+            return null;
+        }
     }
 
     private Claims getClaims(String token) {

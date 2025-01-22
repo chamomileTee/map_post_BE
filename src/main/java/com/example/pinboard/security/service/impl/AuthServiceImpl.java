@@ -88,16 +88,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logout(String userEmail, HttpServletRequest request) {
         try {
-            // AccessToken은 클라이언트에서 제거)
+            UserModel user = accountRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
             //DB에서 RefreshToken 삭제
             String refreshToken = jwtTokenProvider.extractRefreshTokenFromCookie(request);
             if (refreshToken != null) {
                 refreshTokenService.invalidateRefreshToken(refreshToken);
             }
-            log.info("Refresh Token 받은것:"+refreshToken);
+            //log.info("클라이언트로부터 받은 Refresh Token: "+refreshToken);
 
             //RefreshToken 쿠키 삭제
             ResponseCookie deletedCookie = ResponseCookie.from("refresh_token", "")
@@ -107,9 +108,6 @@ public class AuthServiceImpl implements AuthService {
                     .maxAge(0)
                     .build();
 
-            String email = jwtTokenProvider.getUserEmailFromToken(refreshToken);
-            UserModel user = accountRepository.findByEmail(email)
-                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
             userActivityLogService.logUserActivity(user, ActivityType.LOGOUT);
 
             return ResponseEntity.ok()

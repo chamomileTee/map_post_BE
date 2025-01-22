@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final List<String> AUTH_BLACKLIST = Arrays.asList(
-            "/api/memos/**", "/api/groups/**", "/api/account/**"
+            "/api/memos/**", "/api/groups/**", "/api/account/**", "/api/auth/logout"
     ); //인증필요
 
     private static final List<String> AUTH_WHITELIST = Arrays.asList(
@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/swagger-ui.html",
             "/swagger-ui/index.html",
             "/v3/api-docs/**",
-            "/api/auth/**",
+            "/api/auth/login",
             "/api/register/**"
     );
 

@@ -26,14 +26,14 @@ public class SecurityConfig {
     private final CorsFilter corsFilter;
 
     private static final String[] AUTH_BLACKLIST = {
-            "/api/memos/**","/api/groups/**", "/api/account/**"
+            "/api/memos/**","/api/groups/**", "/api/account/**", "/api/auth/logout"
     };
     private static final String[] AUTH_WHITELIST = {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/swagger-ui/index.html",
             "/v3/api-docs/**",
-            "/api/auth/**",
+            "/api/auth/login",
             "/api/register/**"
     };
 

@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
     ResponseEntity<?> login(LoginDto dto);
-    ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response);
+    ResponseEntity<?> logout(String userEmail, HttpServletRequest request);
 }

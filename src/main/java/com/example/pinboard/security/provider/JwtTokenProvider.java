@@ -101,10 +101,10 @@ public class JwtTokenProvider {
     public ResponseCookie generateRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true) //client에서의 쿠키 탈취 예방
-                .secure(false) //https에서 true
+                .secure(true) //https에서 true
                 .path("/") //이 하위 path에서만 cookie 전송
                 .maxAge(refreshTokenExpiration / 1000)
-                .sameSite("Lax") //모든 요청에 서드파티 쿠키와, 퍼스트파티 쿠키가 전송. http에서 Lax, https에서 none, proxy 사용 시 Strict
+                .sameSite("None") //모든 요청에 서드파티 쿠키와, 퍼스트파티 쿠키가 전송. http에서 Lax, https에서 none, proxy 사용 시 Strict
                 .build();
     }
 

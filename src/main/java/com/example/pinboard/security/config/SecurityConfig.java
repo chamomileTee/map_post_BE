@@ -12,23 +12,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.filter.CorsFilter;
 
-/**
- * SecurityConfig
- * <p>Spring Security의 모든 보안 설정을 구성</p>
- *
- * @author Jihyeon Park(jihyeon2525)
- * @version 1.0
- * @since 2025-01-13
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CorsFilter corsFilter;
 
-    private static final String[] AUTH_BLACKLIST={
+    private static final String[] AUTH_BLACKLIST = {
             "/api/memos/**","/api/groups/**", "/api/account/**"
     };
     private static final String[] AUTH_WHITELIST = {
@@ -43,16 +38,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) //JWT는 stateless, CSRF 보호가 필요 없다.
+                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()))
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //세션을 사용하지 않겠다
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_BLACKLIST).authenticated()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().permitAll()
                 )
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class); //로그인 처리 이전 jwt필터 먼저 실행
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

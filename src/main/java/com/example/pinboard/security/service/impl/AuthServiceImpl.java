@@ -97,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
             if (refreshToken != null) {
                 refreshTokenService.invalidateRefreshToken(refreshToken);
             }
+            log.info("Refresh Token 받은것:"+refreshToken);
 
             //RefreshToken 쿠키 삭제
             ResponseCookie deletedCookie = ResponseCookie.from("refresh_token", "")

@@ -138,5 +138,5 @@ jobs:
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e ENCRYPTION_SECRET_KEY=${{ secrets.ENCRYPTION_SECRET_KEY }} \
               -e ENCRYPTION_INIT_VECTOR=${{ secrets.ENCRYPTION_INIT_VECTOR }} \
-              -e CROSS_ORIGINS=${{ secrets.CROSS_ORIGINS }} \
+              -e CROSS_ORIGINS="${{ secrets.CROSS_ORIGINS }}" \
               ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest

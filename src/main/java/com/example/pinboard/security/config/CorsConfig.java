@@ -13,7 +13,7 @@ import java.util.Arrays;
 public class CorsConfig {
 
     @Value("${cors.allow.origins}")
-    private String[] allowedOrigins;
+    private String allowedOrigins;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -21,7 +21,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split("\\s*,\\s*")));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 

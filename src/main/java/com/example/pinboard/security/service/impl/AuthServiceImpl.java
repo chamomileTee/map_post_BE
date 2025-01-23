@@ -93,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
             UserModel user = accountRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND));
 
-            //DB에서 RefreshToken 삭제
+            //DB에서 RefreshToken 비활성화
             String refreshToken = jwtTokenProvider.extractRefreshTokenFromCookie(request);
             if (refreshToken != null) {
                 refreshTokenService.invalidateRefreshToken(refreshToken);

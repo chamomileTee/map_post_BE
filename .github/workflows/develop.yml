@@ -47,7 +47,7 @@ jobs:
               show-sql: true
             data:
               redis:
-              host: redis
+              host: my-redis
               port: 6379
               timeout: 60000
 

@@ -4,17 +4,13 @@ import com.example.pinboard.account.domain.model.UserModel;
 import com.example.pinboard.account.repository.AccountRepository;
 import com.example.pinboard.common.domain.dto.Messenger;
 import com.example.pinboard.common.domain.vo.ExceptionStatus;
-import com.example.pinboard.common.domain.vo.SuccessStatus;
 import com.example.pinboard.common.exception.GlobalException;
 import com.example.pinboard.log.domain.vo.ActivityType;
 import com.example.pinboard.log.service.UserActivityLogService;
-import com.example.pinboard.memo.repository.MemoRepository;
-import com.example.pinboard.memo.service.MemoService;
 import com.example.pinboard.security.domain.dto.LoginDto;
 import com.example.pinboard.security.provider.JwtTokenProvider;
 import com.example.pinboard.security.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
                         log.info("AccessToken for user {}: {}", email, accessToken);
                         log.info("RefreshToken for user {}: {}", email, refreshToken);
 
-                        refreshTokenService.createRefreshToken(user, refreshToken); //DB에 refreshToken 저장
+                        refreshTokenService.createRefreshToken(email, refreshToken); //redis refreshToken 저장
 
                         ResponseCookie refreshTokenCookie = jwtTokenProvider.generateRefreshTokenCookie(refreshToken);
 

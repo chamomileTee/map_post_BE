@@ -76,6 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String userEmail = jwtTokenProvider.getUserEmailFromToken(accessToken);
                 request.setAttribute("userEmail", userEmail);
             } else if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken) && refreshTokenService.validateRefreshToken(refreshToken)) {
+                log.info("Access token is missing or invalid, but refresh token is valid. Generating new access token.");
                 handleTokenRefresh(request, response, filterChain, refreshToken);
                 return;
             } else {

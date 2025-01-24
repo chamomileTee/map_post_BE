@@ -47,7 +47,7 @@ jobs:
               show-sql: true
             data:
               redis:
-              host: my-redis
+              host: ${SPRING_REDIS_HOST:my-redis}
               port: 6379
               timeout: 60000
 
@@ -137,6 +137,7 @@ jobs:
               docker rm pinboard-app
             fi
             docker run -d --name pinboard-app --network pinboard-network -p 8484:8484 \
+              -e SPRING_REDIS_HOST=my-redis \
               -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \

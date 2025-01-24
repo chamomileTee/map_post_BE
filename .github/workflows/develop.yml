@@ -145,5 +145,5 @@ jobs:
               -e ENCRYPTION_SECRET_KEY=${{ secrets.ENCRYPTION_SECRET_KEY }} \
               -e ENCRYPTION_INIT_VECTOR=${{ secrets.ENCRYPTION_INIT_VECTOR }} \
               -e CROSS_ORIGINS="${{ secrets.CROSS_ORIGINS }}" \
-              -e REDIS_PRIVATE_IP="${{ secrets.REDIS_PRIVATE_IP }} \
+              -e REDIS_PRIVATE_IP=${{ secrets.REDIS_PRIVATE_IP }} \
               ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest

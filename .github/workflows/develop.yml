@@ -47,9 +47,9 @@ jobs:
               show-sql: true
             data:
               redis:
-              host: ${SPRING_REDIS_HOST:my-redis}
-              port: 6379
-              timeout: 60000
+                host: ${SPRING_REDIS_HOST:my-redis}
+                port: 6379
+                timeout: 60000
 
           spring.datasource.hikari.connection-init-sql: SET NAMES utf8mb4
 

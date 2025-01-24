@@ -5,8 +5,6 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 import lombok.*;
 
-import jakarta.persistence.*;
-
 /**
  * RefreshTokenModel
  * <p>유저 리프레시 토큰 정보 redis 저장</p>

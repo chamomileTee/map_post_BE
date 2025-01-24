@@ -136,7 +136,7 @@ jobs:
               docker stop pinboard-app
               docker rm pinboard-app
             fi
-            docker run -d --name pinboard-app -p 8484:8484 \
+            docker run -d --name pinboard-app --network pinboard-network -p 8484:8484 \
               -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} \
               -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
               -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \
